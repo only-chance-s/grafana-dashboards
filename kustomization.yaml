@@ -3,9 +3,7 @@ generatorOptions:
   disableNameSuffixHash: true
   labels:
     grafana_dashboard: "1"
-commonAnnotations:
-  grafana_folder: "Kubernetes"
-#namespace: monitoring
+namespace: monitoring
 
 # Generate a ConfigMap for each dashboard
 configMapGenerator:
