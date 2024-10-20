@@ -44,3 +44,6 @@ configMapGenerator:
 
 - name: app-monitoring-staging
   files: [ dashboards/app_monitoring_staging.json ]
+
+- name: node-exporter
+  files: [ dashboards/node-exporter.json ]
