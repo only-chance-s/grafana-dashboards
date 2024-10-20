@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana-dashboards-kubernetes
+  name: grafana-dashboards
   namespace: argocd
   labels:
-    app.kubernetes.io/name: grafana-dashboards-kubernetes
+    app.kubernetes.io/name: grafana-dashboards
     app.kubernetes.io/version: HEAD
     app.kubernetes.io/managed-by: argocd
   finalizers:
@@ -13,7 +13,7 @@ spec:
   project: default # You may need to change this!
   source:
     path: ./
-    repoURL: https://github.com/eco-heroes/grafana-dashboards-kubernetes
+    repoURL: https://github.com/eco-heroes/grafana-dashboards
     targetRevision: HEAD
 
   destination:

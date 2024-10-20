@@ -1,6 +1,6 @@
-# grafana-dashboards-kubernetes <!-- omit in toc -->
+# grafana-dashboards <!-- omit in toc -->
 
-![logo](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/kubernetes-grafana-dashboards-logo.png)
+![logo](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/kubernetes-grafana-dashboards-logo.png)
 
 ## Table of contents <!-- omit in toc -->
 
@@ -49,28 +49,28 @@ They also have a `Prometheus Datasource` variable so they will work on a federat
 
 As an example, here's how the `Kubernetes / Views / Global` dashboard looks like:
 
-![screenshot](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-views-global.png "Kubernetes Global View Screenshot")
+![screenshot](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-views-global.png "Kubernetes Global View Screenshot")
 
 ## Dashboards
 
 | File name                  | Description | Screenshot |
 |:---------------------------|:------------|:----------:|
-| k8s-addons-prometheus.json | Dashboard for Prometheus. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-addons-prometheus.png) |
-| k8s-addons-trivy-operator.json | Dashboard for the Trivy Operator from Aqua Security. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-addons-trivy-operator.png) |
-| k8s-system-api-server.json | Dashboard for the API Server Kubernetes component. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-system-api-server.png) |
-| k8s-system-coredns.json    | Show information on the CoreDNS Kubernetes component. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-system-coredns.png) |
-| k8s-views-global.json      | `Global` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-views-global.png) |
-| k8s-views-namespaces.json  | `Namespaces` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-views-namespaces.png) |
-| k8s-views-nodes.json       | `Nodes` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-views-nodes.png) |
-| k8s-views-pods.json        | `Pods` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards-kubernetes/k8s-views-pods.png) |
+| k8s-addons-prometheus.json | Dashboard for Prometheus. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-addons-prometheus.png) |
+| k8s-addons-trivy-operator.json | Dashboard for the Trivy Operator from Aqua Security. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-addons-trivy-operator.png) |
+| k8s-system-api-server.json | Dashboard for the API Server Kubernetes component. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-system-api-server.png) |
+| k8s-system-coredns.json    | Show information on the CoreDNS Kubernetes component. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-system-coredns.png) |
+| k8s-views-global.json      | `Global` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-views-global.png) |
+| k8s-views-namespaces.json  | `Namespaces` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-views-namespaces.png) |
+| k8s-views-nodes.json       | `Nodes` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-views-nodes.png) |
+| k8s-views-pods.json        | `Pods` level view dashboard for Kubernetes. | [LINK](https://raw.githubusercontent.com/dotdc/media/main/grafana-dashboards/k8s-views-pods.png) |
 
 ## Installation
 
 In most cases, you will need to clone this repository (or your fork):
 
 ```terminal
-git clone https://github.com/eco-heroes/grafana-dashboards-kubernetes.git
-cd grafana-dashboards-kubernetes
+git clone https://github.com/eco-heroes/grafana-dashboards.git
+cd grafana-dashboards
 ```
 
 If you plan to deploy these dashboards using [ArgoCD](#install-with-argocd), [ConfigMaps](#install-as-configmaps) or [Terraform](#install-as-configmaps-with-terraform), you will also need to enable and configure the `dashboards sidecar` on the Grafana Helm chart to get the dashboards loaded in your Grafana instance:
@@ -132,38 +132,38 @@ The example is for [kube-prometheus-stack](https://github.com/prometheus-communi
 
 ```yaml
 grafana:
-  # Provision grafana-dashboards-kubernetes
+  # Provision grafana-dashboards
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
       providers:
-      - name: 'grafana-dashboards-kubernetes'
+      - name: 'grafana-dashboards'
         orgId: 1
         folder: 'Kubernetes'
         type: file
         disableDeletion: true
         editable: true
         options:
-          path: /var/lib/grafana/dashboards/grafana-dashboards-kubernetes
+          path: /var/lib/grafana/dashboards/grafana-dashboards
   dashboards:
-    grafana-dashboards-kubernetes:
+    grafana-dashboards:
       k8s-system-api-server:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-api-server.json
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-system-api-server.json
         token: ''
       k8s-system-coredns:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-coredns.json
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-system-coredns.json
         token: ''
       k8s-views-global:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-global.json
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-global.json
         token: ''
       k8s-views-namespaces:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-namespaces.json
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-namespaces.json
         token: ''
       k8s-views-nodes:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-nodes.json
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-nodes.json
         token: ''
       k8s-views-pods:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json
+        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-pods.json
         token: ''
 ```
 
@@ -207,13 +207,13 @@ You will also need to enable and configure the Grafana `dashboards sidecar` as d
 
 ### Broken panels due to a too-high resolution
 
-A user reported in [#50](https://github.com/eco-heroes/grafana-dashboards-kubernetes/issues/50) that some panels were broken because the default value of the `$resolution` variable was too low. The root cause hasn't been identified precisely, but he was using Grafana Agent & Grafana Mimir. Changing the `$resolution` variable to a higher value (a lower resolution) will likely solve the issue.
+A user reported in [#50](https://github.com/eco-heroes/grafana-dashboards/issues/50) that some panels were broken because the default value of the `$resolution` variable was too low. The root cause hasn't been identified precisely, but he was using Grafana Agent & Grafana Mimir. Changing the `$resolution` variable to a higher value (a lower resolution) will likely solve the issue.
 To make the fix permanent, you can configure the `Scrape interval` in your Grafana Datasource to a working value for your setup.
 
 ### Broken panels on k8s-views-nodes when a node changes its IP address
 
 To make this dashboard more convenient, there's a small variable hack to display `node` instead of `instance`.
-Because of that, some panels could lack data when a node changes its IP address as reported in [#102](https://github.com/eco-heroes/grafana-dashboards-kubernetes/issues/102).
+Because of that, some panels could lack data when a node changes its IP address as reported in [#102](https://github.com/eco-heroes/grafana-dashboards/issues/102).
 
 No easy fix for this scenario yet, but it should be a corner case for most people.
 Feel free to reopen the issue if you have ideas to fix this.
@@ -309,5 +309,5 @@ The `HOSTNAME` environment variable is injected by default by the [Grafana Agent
 Feel free to contribute to this project:
 
 - Give a GitHub ⭐ if you like it
-- Create an [Issue](https://github.com/eco-heroes/grafana-dashboards-kubernetes/issues) to make a feature request, report a bug or share an idea.
-- Create a [Pull Request](https://github.com/eco-heroes/grafana-dashboards-kubernetes/pulls) if you want to share code or anything useful to this project.
+- Create an [Issue](https://github.com/eco-heroes/grafana-dashboards/issues) to make a feature request, report a bug or share an idea.
+- Create a [Pull Request](https://github.com/eco-heroes/grafana-dashboards/pulls) if you want to share code or anything useful to this project.

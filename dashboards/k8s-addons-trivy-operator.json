@@ -64,7 +64,7 @@
       }
     ]
   },
-  "description": "This is a modern dashboard for the Trivy Operator from Aqua Security. Made to take advantage of the latest Grafana features. GitHub repository: https://github.com/eco-heroes/grafana-dashboards-kubernetes",
+  "description": "This is a modern dashboard for the Trivy Operator from Aqua Security. Made to take advantage of the latest Grafana features. GitHub repository: https://github.com/eco-heroes/grafana-dashboards",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
