@@ -148,22 +148,22 @@ grafana:
   dashboards:
     grafana-dashboards:
       k8s-system-api-server:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-system-api-server.json
+        url: https://raw.githubusercontent.com/eco-heroes/grafana-dashboards/main/dashboards/k8s-system-api-server.json
         token: ''
       k8s-system-coredns:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-system-coredns.json
+        url: https://raw.githubusercontent.com/eco-heroes/grafana-dashboards/main/dashboards/k8s-system-coredns.json
         token: ''
       k8s-views-global:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-global.json
+        url: https://raw.githubusercontent.com/eco-heroes/grafana-dashboards/main/dashboards/k8s-views-global.json
         token: ''
       k8s-views-namespaces:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-namespaces.json
+        url: https://raw.githubusercontent.com/eco-heroes/grafana-dashboards/main/dashboards/k8s-views-namespaces.json
         token: ''
       k8s-views-nodes:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-nodes.json
+        url: https://raw.githubusercontent.com/eco-heroes/grafana-dashboards/main/dashboards/k8s-views-nodes.json
         token: ''
       k8s-views-pods:
-        url: https://raw.githubusercontent.com/dotdc/grafana-dashboards/master/dashboards/k8s-views-pods.json
+        url: https://raw.githubusercontent.com/eco-heroes/grafana-dashboards/main/dashboards/k8s-views-pods.json
         token: ''
 ```
 
