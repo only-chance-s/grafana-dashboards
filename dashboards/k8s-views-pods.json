@@ -2709,7 +2709,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Kubernetes / Views / Pods",
+  "title": "k8s Pods",
   "uid": "k8s_views_pods",
   "version": 32,
   "weekStart": ""

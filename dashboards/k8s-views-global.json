@@ -3517,7 +3517,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Kubernetes / Views / Global",
+  "title": "k8s Global",
   "uid": "k8s_views_global",
   "version": 42,
   "weekStart": ""

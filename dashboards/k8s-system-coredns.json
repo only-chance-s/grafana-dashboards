@@ -1555,7 +1555,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Kubernetes / System / CoreDNS",
+  "title": "k8s CoreDNS",
   "uid": "k8s_system_coredns",
   "version": 18,
   "weekStart": ""

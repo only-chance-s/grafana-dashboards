@@ -3975,7 +3975,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Kubernetes / Views / Nodes",
+  "title": "k8s nodes",
   "uid": "k8s_views_nodes",
   "version": 32,
   "weekStart": ""
