@@ -1,41 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": [],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "8.4.4"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -58,10 +21,11 @@
       }
     ]
   },
-  "description": "This is a modern CoreDNS dashboard for your Kubernetes cluster(s). Made for kube-prometheus-stack and take advantage of the latest Grafana features. GitHub repository: https://github.com/eco-heroes/grafana-dashboards",
+  "description": "This is a modern CoreDNS dashboard for your Kubernetes cluster(s). Made for kube-prometheus-stack and take advantage of the latest Grafana features. GitHub repository: https://github.com/dotdc/grafana-dashboards-kubernetes",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
+  "id": 8,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -97,7 +61,8 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -124,7 +89,7 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.1",
+      "pluginVersion": "10.3.3",
       "targets": [
         {
           "datasource": {
@@ -198,7 +163,8 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "percentunit",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -294,7 +260,8 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "bytes",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -390,7 +357,8 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "short",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -486,7 +454,8 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "bytes",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -573,8 +542,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -669,8 +637,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -765,8 +732,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -861,8 +827,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -957,8 +922,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1064,8 +1028,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1357,7 +1320,7 @@
   "refresh": "30s",
   "schemaVersion": 39,
   "tags": [
-    "cluster",
+    "cluster"
   ],
   "templating": {
     "list": [
@@ -1365,7 +1328,7 @@
         "current": {
           "selected": false,
           "text": "Prometheus",
-          "value": "Prometheus"
+          "value": "PBFA97CFB590B2093"
         },
         "hide": 0,
         "includeAll": false,
@@ -1520,10 +1483,10 @@
         "current": {
           "selected": true,
           "text": [
-            "coredns"
+            "kubernetes-service-endpoints"
           ],
           "value": [
-            "coredns"
+            "kubernetes-service-endpoints"
           ]
         },
         "datasource": {
@@ -1555,8 +1518,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "k8s CoreDNS",
+  "title": "Kubernetes / System / CoreDNS",
   "uid": "k8s_system_coredns",
-  "version": 18,
+  "version": 3,
   "weekStart": ""
 }

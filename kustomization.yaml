@@ -37,9 +37,6 @@ configMapGenerator:
 - name: dashboards-k8s-addons-prometheus
   files: [ dashboards/k8s-addons-prometheus.json ]
 
-- name: dashboards-k8s-addons-trivy-operator
-  files: [ dashboards/k8s-addons-trivy-operator.json ]
-
 - name: app-monitoring-staging
   files: [ dashboards/app_monitoring_staging.json ]
 
