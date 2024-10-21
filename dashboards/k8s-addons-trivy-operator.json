@@ -2551,7 +2551,7 @@
   "schemaVersion": 37,
   "style": "dark",
   "tags": [
-    "Prometheus",
+    "cluster",
     "Addons",
     "Trivy",
     "Trivy-operator"

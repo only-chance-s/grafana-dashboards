@@ -1357,8 +1357,7 @@
   "refresh": "30s",
   "schemaVersion": 39,
   "tags": [
-    "Kubernetes",
-    "Prometheus"
+    "cluster",
   ],
   "templating": {
     "list": [

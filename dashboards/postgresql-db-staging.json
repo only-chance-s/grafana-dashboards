@@ -3067,10 +3067,9 @@
   "refresh": "10s",
   "schemaVersion": 39,
   "tags": [
-    "postgres",
     "db",
-    "stats",
-    "staging"
+    "staging",
+    "app"
   ],
   "templating": {
     "list": [
