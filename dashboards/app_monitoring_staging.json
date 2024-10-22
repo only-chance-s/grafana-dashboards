@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 10,
   "links": [
     {
       "asDropdown": false,
@@ -49,7 +50,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "light-green",
@@ -91,7 +93,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"waste-app-staging/waste-app\", app=\"waste-app\"} | json | level=\"INFO\" | __error__=\"\" [${__range_s}s]))\n",
+          "expr": "sum(count_over_time($the_job_app | json | level=\"INFO\" | __error__=\"\" [${__range_s}s]))\n",
           "queryType": "range",
           "refId": "A"
         }
@@ -115,7 +117,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "dark-red",
@@ -157,7 +160,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"waste-app-staging/waste-app\", app=\"waste-app\"} | json | level=\"ERROR\" | __error__=\"\" [${__range_s}s]))\n",
+          "expr": "sum(count_over_time($the_job_app | json | level=\"ERROR\" | __error__=\"\" [${__range_s}s]))\n",
           "queryType": "range",
           "refId": "A"
         }
@@ -183,7 +186,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -220,8 +224,8 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "editorMode": "builder",
-          "expr": "sum by (status_code) (count_over_time({job=\"waste-app-staging/waste-app\", app=\"waste-app\"} | json | status_code!=\"\" [${__range_s}s]))\n",
+          "editorMode": "code",
+          "expr": "sum by (status_code) (count_over_time($the_job_app | json | status_code!=\"\" [${__range_s}s]))\n",
           "legendFormat": "{{status_code}}",
           "queryType": "range",
           "refId": "A",
@@ -279,7 +283,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "dark-red",
@@ -319,7 +324,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"waste-app-staging/waste-app\", app=\"waste-app\"} | json | level=\"ERROR\" | __error__=\"\" [${__range_s}s]))/ sum(count_over_time({job=\"waste-app-staging/waste-app\", app=\"waste-app\"} | json | level=\"INFO\" | __error__=\"\" [${__range_s}s])) * 100\n\n",
+          "expr": "sum(count_over_time($the_job_app | json | level=\"ERROR\" | __error__=\"\" [${__range_s}s]))/ sum(count_over_time($the_job_app | json | level=\"INFO\" | __error__=\"\" [${__range_s}s])) * 100\n\n",
           "queryType": "range",
           "refId": "A"
         }
@@ -415,7 +420,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(\n  {job=\"waste-app-staging/waste-app\", app=\"waste-app\"}\n  | json\n  | response_time != \"\"\n  | django_url_path != \"\"\n  |  __error__=\"\" \n  | unwrap response_time [${__range_s}s]\n) by (django_url_path)",
+          "expr": "avg_over_time(\n  $the_job_app\n  | json\n  | response_time != \"\"\n  | django_url_path != \"\"\n  |  __error__=\"\" \n  | unwrap response_time [${__range_s}s]\n) by (django_url_path)",
           "legendFormat": "{{django_url_path}}",
           "queryType": "range",
           "refId": "A",
@@ -441,7 +446,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -479,7 +485,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "count (sum by (user_id) (count_over_time({ job=\"waste-app-staging/waste-app\", app=\"waste-app\"} | json | __error__=\"\" [${__range_s}s]   )))\n",
+          "expr": "count (sum by (user_id) (count_over_time($the_job_app | json | __error__=\"\" [${__range_s}s]   )))\n",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
@@ -511,7 +517,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -636,14 +643,33 @@
       "type": "geomap"
     }
   ],
-  "refresh": "5s",
+  "refresh": "1m",
   "schemaVersion": 39,
-  "tags": [
-    "staging",
-    "app"
-  ],
+  "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "hide": 2,
+        "name": "the_job",
+        "query": "\"staging-ns/waste-app\"",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "the_job_app",
+        "query": "{job=\"staging-ns/waste-app\", app=\"waste-app\"}",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "the_app",
+        "query": "\"waste_app\"",
+        "skipUrlSync": false,
+        "type": "constant"
+      }
+    ]
   },
   "time": {
     "from": "now-30m",
