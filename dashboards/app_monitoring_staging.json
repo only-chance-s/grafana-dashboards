@@ -651,21 +651,21 @@
       {
         "hide": 2,
         "name": "the_job",
-        "query": "\"staging-ns/waste-app\"",
+        "query": "\"staging-ns/web-app\"",
         "skipUrlSync": false,
         "type": "constant"
       },
       {
         "hide": 2,
         "name": "the_job_app",
-        "query": "{job=\"staging-ns/waste-app\", app=\"waste-app\"}",
+        "query": "{job=\"staging-ns/web-app\", app=\"web-app\"}",
         "skipUrlSync": false,
         "type": "constant"
       },
       {
         "hide": 2,
         "name": "the_app",
-        "query": "\"waste_app\"",
+        "query": "\"web-app\"",
         "skipUrlSync": false,
         "type": "constant"
       }
