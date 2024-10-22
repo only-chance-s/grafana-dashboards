@@ -20,7 +20,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 9628,
   "graphTooltip": 0,
-  "id": 17,
+  "id": 6,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -854,7 +854,7 @@
               "type": "linear"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "line"
             }
           },
           "mappings": [],
@@ -867,10 +867,11 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 200
               }
             ]
           },
+          "unit": "ms",
           "unitScale": true
         },
         "overrides": []
@@ -886,10 +887,13 @@
       "options": {
         "barRadius": 0.5,
         "barWidth": 0.97,
+        "colorByField": "Mean Exec Time (ms)",
         "fullHighlight": true,
         "groupWidth": 0.7,
         "legend": {
-          "calcs": [],
+          "calcs": [
+            "mean"
+          ],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -3312,9 +3316,10 @@
       },
       {
         "current": {
+          "isNone": true,
           "selected": false,
-          "text": "postgres-exporter.waste-app-staging.svc.cluster.local:9187",
-          "value": "postgres-exporter.waste-app-staging.svc.cluster.local:9187"
+          "text": "None",
+          "value": ""
         },
         "datasource": {
           "type": "prometheus",
@@ -3341,10 +3346,10 @@
         "current": {
           "selected": true,
           "text": [
-            "ecoheroes_db"
+            "All"
           ],
           "value": [
-            "ecoheroes_db"
+            "$__all"
           ]
         },
         "datasource": {
