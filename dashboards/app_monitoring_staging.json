@@ -645,7 +645,7 @@
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": [],
+  "tags": ["staging", "app"],
   "templating": {
     "list": [
       {
