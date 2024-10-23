@@ -995,7 +995,8 @@
   "refresh": "",
   "schemaVersion": 39,
   "tags": [
-    "redis"
+    "redis",
+    "staging"
   ],
   "templating": {
     "list": [
