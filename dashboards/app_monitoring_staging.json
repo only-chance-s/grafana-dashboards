@@ -225,7 +225,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (status_code) (count_over_time($the_job_app | json | status_code!=\"\" | status_code!=\"no status code\" [${__range_s}s]))\n\n",
+          "expr": "sum by (status_code) (count_over_time($the_job_app | json | django_url_path!=\"\" | status_code!=\"\" | status_code!=\"no status code\" [${__range_s}s]))\n\n",
           "legendFormat": "{{status_code}}",
           "queryType": "range",
           "refId": "A",
@@ -274,9 +274,10 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "line"
+              "mode": "area"
             }
           },
+          "links": [],
           "mappings": [],
           "noValue": "0",
           "thresholds": {
@@ -325,6 +326,7 @@
           },
           "editorMode": "code",
           "expr": "sum(count_over_time($the_job_app | json | level=\"ERROR\" | django_url_path!=\"\" | __error__=\"\" [${__range_s}s]))/ sum(count_over_time($the_job_app | json | level=\"INFO\" | django_url_path!=\"\" | __error__=\"\" [${__range_s}s])) * 100\n\n",
+          "legendFormat": "%",
           "queryType": "range",
           "refId": "A"
         }
@@ -372,7 +374,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "links": [],
@@ -384,6 +386,10 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "semi-dark-red",
+                "value": 400
               }
             ]
           },
@@ -714,7 +720,7 @@
       "type": "geomap"
     }
   ],
-  "refresh": false,
+  "refresh": "1m",
   "schemaVersion": 39,
   "tags": [
     "staging",
@@ -746,13 +752,13 @@
     ]
   },
   "time": {
-    "from": "2024-10-23T21:44:43.527Z",
-    "to": "2024-10-23T22:00:36.763Z"
+    "from": "now-15m",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "App monitoring staging",
   "uid": "b773ce4c-fe18-4fb6-a38d-01a5e4a219b9",
-  "version": 2,
+  "version": 4,
   "weekStart": ""
 }
