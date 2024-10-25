@@ -93,7 +93,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time($the_job_app | json | level=\"INFO\" | django_url_path !=\"\" | status_code!=\"no status code\" | __error__=\"\" [${__range_s}s]))\n",
+          "expr": "sum(count_over_time($the_job_app |= \"level='INFO'\" [${__range_s}s]))\n",
           "queryType": "range",
           "refId": "A"
         }
@@ -160,7 +160,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time($the_job_app | json | level=\"ERROR\" | django_url_path != \"\" | status_code!=\"no status code\" | __error__=\"\" [${__range_s}s]))\n",
+          "expr": "sum(count_over_time($the_job_app |= \"level='ERROR'\" [${__range_s}s]))\n",
           "queryType": "range",
           "refId": "A"
         }
@@ -179,9 +179,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "links": [],
           "mappings": [],
-          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -225,7 +223,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (status_code) (count_over_time($the_job_app | json | django_url_path!=\"\" | status_code!=\"\" | status_code!=\"no status code\" [${__range_s}s]))\n\n",
+          "expr": "sum by (status_code) (\n  count_over_time({app=\"web-app\"} \n  |= \"url_timings__api\" \n  | regexp \"status_code__(?P<status_code>\\\\d+)\" \n  | status_code != \"\" [${__range_s}s])\n)",
           "legendFormat": "{{status_code}}",
           "queryType": "range",
           "refId": "A",
@@ -325,7 +323,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time($the_job_app | json | level=\"ERROR\" | django_url_path!=\"\" | __error__=\"\" [${__range_s}s]))/ sum(count_over_time($the_job_app | json | level=\"INFO\" | django_url_path!=\"\" | __error__=\"\" [${__range_s}s])) * 100\n\n",
+          "expr": "sum(count_over_time($the_job_app |= \"level='ERROR'\" [${__range_s}s])) / sum(count_over_time($the_job_app |= \"level='INFO'\" [${__range_s}s])) * 100\n\n",
           "legendFormat": "%",
           "queryType": "range",
           "refId": "A"
@@ -339,61 +337,24 @@
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "links": [],
+          "fieldMinMax": false,
           "mappings": [],
           "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "dark-red",
                 "value": null
-              },
-              {
-                "color": "semi-dark-red",
-                "value": 400
               }
             ]
           },
-          "unitScale": true
+          "unitScale": false
         },
         "overrides": []
       },
@@ -403,20 +364,25 @@
         "x": 0,
         "y": 8
       },
-      "id": 5,
+      "id": 9,
       "options": {
-        "legend": {
+        "displayMode": "basic",
+        "maxVizHeight": 300,
+        "minVizHeight": 56,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showUnfilled": false,
+        "sizing": "auto",
+        "text": {},
+        "valueMode": "color"
       },
       "pluginVersion": "10.3.3",
       "targets": [
@@ -426,15 +392,16 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(\n  $the_job_app\n  | json\n  | response_time != \"\"\n  | django_url_path != \"\"\n  | status_code != \"\"\n  |  __error__=\"\" \n  | unwrap response_time [${__range_s}s]\n) by (django_url_path)",
+          "expr": "sum by (django_url_path) (count_over_time({app=\"web-app\"} \n| json \n| level = \"ERROR\" \n| django_url_path!=\"\"\n| __error__=\"\" [${__range_s}s])\n )",
+          "key": "Q-51fdf891-e91b-4281-96a7-5f3e04476344-0",
           "legendFormat": "{{django_url_path}}",
           "queryType": "range",
-          "refId": "A",
-          "step": ""
+          "refId": "A"
         }
       ],
-      "title": "Response timings(ms)",
-      "type": "timeseries"
+      "title": "Failing endpoints",
+      "transformations": [],
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -491,7 +458,7 @@
               },
               {
                 "color": "semi-dark-red",
-                "value": 400
+                "value": 30
               }
             ]
           },
@@ -593,7 +560,7 @@
               },
               {
                 "color": "semi-dark-red",
-                "value": 400
+                "value": 200
               }
             ]
           },
@@ -695,13 +662,14 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "count (sum by (user_id) (count_over_time($the_job_app | json | __error__=\"\" [${__range_s}s]   )))\n",
+          "expr": "count(\n  count by (user_id) (\n    count_over_time(\n      {app=\"web-app\", namespace=\"staging-ns\"}\n      |= \"url_timings__\" \n      | regexp \"status_code__(?P<status_code>\\\\d+)\" \n      | regexp \"user_id='(?P<user_id>[^']+)'\" \n      | user_id != \"None\" \n      | status_code != \"\" [${__range_s}s]\n    )\n  )\n)",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
       "title": "User counter",
+      "transformations": [],
       "type": "gauge"
     },
     {
@@ -709,52 +677,84 @@
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
-          "fieldMinMax": false,
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
+            }
+          },
+          "links": [],
           "mappings": [],
           "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-red",
+                "color": "green",
                 "value": null
+              },
+              {
+                "color": "semi-dark-red",
+                "value": 400
               }
             ]
           },
-          "unitScale": false
+          "unitScale": true
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 14,
         "w": 24,
         "x": 0,
         "y": 16
       },
-      "id": 9,
+      "id": 5,
       "options": {
-        "displayMode": "basic",
-        "maxVizHeight": 300,
-        "minVizHeight": 56,
-        "minVizWidth": 8,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
+        "legend": {
           "calcs": [
-            "lastNotNull"
+            "mean"
           ],
-          "fields": "",
-          "values": false
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showUnfilled": false,
-        "sizing": "auto",
-        "text": {},
-        "valueMode": "color"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.3.3",
       "targets": [
@@ -764,16 +764,15 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (django_url_path) (count_over_time({app=\"web-app\"} \n| json \n| level = \"ERROR\" \n| django_url_path!=\"\"\n| __error__=\"\" [${__range_s}s])\n )",
-          "key": "Q-51fdf891-e91b-4281-96a7-5f3e04476344-0",
-          "legendFormat": "{{django_url_path}}",
+          "expr": "avg by (api_name) (avg_over_time(\n  {app=\"web-app\", namespace=\"staging-ns\"}\n  |= \"url_timings__\" \n  | regexp \"url_timings__(?P<api_name>[a-zA-Z_\\\\-:]+)__(?P<request_time>\\\\d+\\\\.\\\\d+)\" \n  | unwrap request_time\n  | __error__=\"\" [${__range_s}s]\n) )",
+          "legendFormat": "{{api_name}}",
           "queryType": "range",
-          "refId": "A"
+          "refId": "A",
+          "step": ""
         }
       ],
-      "title": "Failing endpoints",
-      "transformations": [],
-      "type": "bargauge"
+      "title": "Response timings(ms)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -811,7 +810,7 @@
         "h": 17,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 30
       },
       "id": 7,
       "options": {
@@ -956,13 +955,13 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "App monitoring staging",
   "uid": "b773ce4c-fe18-4fb6-a38d-01a5e4a219b9",
-  "version": 6,
+  "version": 12,
   "weekStart": ""
 }
