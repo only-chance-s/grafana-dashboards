@@ -40,8 +40,8 @@ configMapGenerator:
 - name: app-monitoring-staging
   files: [ dashboards/app_monitoring_staging.json ]
 
-#- name: github
-#  files: [ dashboards/github-dashboard.json ]
+- name: github
+  files: [ dashboards/github-dashboard.json ]
 
 - name: dashboards-postgresql-db-staging
   files: [ dashboards/postgresql-db-staging.json ]
