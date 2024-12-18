@@ -22,7 +22,7 @@
       {
         "datasource": {
           "type": "grafana-github-datasource",
-          "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+          "uid": "PF911E414CF6BDFC5"
         },
         "enable": true,
         "hide": false,
@@ -41,7 +41,7 @@
       {
         "datasource": {
           "type": "grafana-github-datasource",
-          "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+          "uid": "PF911E414CF6BDFC5"
         },
         "enable": true,
         "iconColor": "green",
@@ -69,7 +69,7 @@
     {
       "datasource": {
         "type": "grafana-github-datasource",
-        "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+        "uid": "PF911E414CF6BDFC5"
       },
       "fieldConfig": {
         "defaults": {
@@ -150,7 +150,7 @@
         {
           "datasource": {
             "type": "grafana-github-datasource",
-            "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+            "uid": "PF911E414CF6BDFC5"
           },
           "options": {
             "query": "label:backend,frontend",
@@ -182,7 +182,7 @@
     {
       "datasource": {
         "type": "grafana-github-datasource",
-        "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+        "uid": "PF911E414CF6BDFC5"
       },
       "fieldConfig": {
         "defaults": {
@@ -241,7 +241,7 @@
         {
           "datasource": {
             "type": "grafana-github-datasource",
-            "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+            "uid": "PF911E414CF6BDFC5"
           },
           "owner": "eco-heroes",
           "queryType": "Releases",
@@ -269,7 +269,7 @@
     {
       "datasource": {
         "type": "grafana-github-datasource",
-        "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+        "uid": "PF911E414CF6BDFC5"
       },
       "fieldConfig": {
         "defaults": {
@@ -328,7 +328,7 @@
         {
           "datasource": {
             "type": "grafana-github-datasource",
-            "uid": "aedd67a0-ffd9-4fa5-97d4-60f387d0688f"
+            "uid": "PF911E414CF6BDFC5"
           },
           "owner": "eco-heroes",
           "queryType": "Releases",
