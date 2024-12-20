@@ -919,7 +919,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT query, mean_exec_time * 1000 AS \"Mean Exec Time (ms)\"\n-- SELECT *\nFROM pg_stat_statements\n   \n  ORDER BY mean_exec_time desc\nLIMIT\n  30;",
+          "rawSql": "SELECT query, mean_exec_time * 1000 AS \"Mean Exec Time (ms)\"\n-- SELECT *\nFROM pg_stat_statements\nWHERE \n    query NOT LIKE '%%pg\\_%'\n   AND query NOT LIKE 'SET application_name%'\n  ORDER BY mean_exec_time desc\nLIMIT\n  30;",
           "refId": "A",
           "sql": {
             "columns": [
