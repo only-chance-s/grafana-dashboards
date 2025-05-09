@@ -32,10 +32,10 @@
           "options": {
             "query": "label:\"frontend\" label:\"staging\""
           },
-          "owner": "eco-heroes",
+          "owner": "only-chance-s",
           "queryType": "Pull_Requests",
           "refId": "Anno",
-          "repository": "waste_app_devops"
+          "repository": "only-chance-devops"
         }
       },
       {
@@ -51,10 +51,10 @@
             "query": "label:backend label:staging",
             "timeField": 2
           },
-          "owner": "eco-heroes",
+          "owner": "only-chance-s",
           "queryType": "Pull_Requests",
           "refId": "Anno",
-          "repository": "waste_app_devops"
+          "repository": "only-chance-devops"
         }
       }
     ]
@@ -156,10 +156,10 @@
             "query": "label:backend,frontend",
             "timeField": 2
           },
-          "owner": "eco-heroes",
+          "owner": "only-chance-s",
           "queryType": "Pull_Requests",
           "refId": "A",
-          "repository": "waste_app_devops"
+          "repository": "only-chance-devops"
         }
       ],
       "title": "Staging releases",
@@ -243,10 +243,10 @@
             "type": "grafana-github-datasource",
             "uid": "PF911E414CF6BDFC5"
           },
-          "owner": "eco-heroes",
+          "owner": "only-chance-s",
           "queryType": "Releases",
           "refId": "A",
-          "repository": "waste_app"
+          "repository": "only-chance-frontend"
         }
       ],
       "title": "Backend Releases",
@@ -330,10 +330,10 @@
             "type": "grafana-github-datasource",
             "uid": "PF911E414CF6BDFC5"
           },
-          "owner": "eco-heroes",
+          "owner": "only-chance-s",
           "queryType": "Releases",
           "refId": "A",
-          "repository": "waste_app_web"
+          "repository": "only-chance-backend"
         }
       ],
       "title": "Frontend Releases",
