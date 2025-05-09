@@ -11,57 +11,13 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
-        "target": {
-          "limit": 100,
-          "matchAny": false,
-          "tags": [],
-          "type": "dashboard"
-        },
         "type": "dashboard"
-      },
-      {
-        "datasource": {
-          "type": "grafana-github-datasource",
-          "uid": "PF911E414CF6BDFC5"
-        },
-        "enable": true,
-        "hide": false,
-        "iconColor": "orange",
-        "name": "Frontend STG releases",
-        "target": {
-          "options": {
-            "query": "label:\"frontend\" label:\"staging\""
-          },
-          "owner": "eco-heroes",
-          "queryType": "Pull_Requests",
-          "refId": "Anno",
-          "repository": "waste_app_devops"
-        }
-      },
-      {
-        "datasource": {
-          "type": "grafana-github-datasource",
-          "uid": "PF911E414CF6BDFC5"
-        },
-        "enable": true,
-        "iconColor": "green",
-        "name": "Backend STG releases",
-        "target": {
-          "options": {
-            "query": "label:backend label:staging",
-            "timeField": 2
-          },
-          "owner": "eco-heroes",
-          "queryType": "Pull_Requests",
-          "refId": "Anno",
-          "repository": "waste_app_devops"
-        }
       }
     ]
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 1,
+  "graphTooltip": 0,
   "id": 12,
   "links": [],
   "liveNow": false,
@@ -69,123 +25,13 @@
     {
       "datasource": {
         "type": "grafana-github-datasource",
-        "uid": "PF911E414CF6BDFC5"
+        "uid": "da518ee5-608f-422d-b212-0f58516f053d"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-github-datasource",
-            "uid": "PF911E414CF6BDFC5"
-          },
-          "options": {
-            "query": "label:backend,frontend",
-            "timeField": 2
-          },
-          "owner": "eco-heroes",
-          "queryType": "Pull_Requests",
-          "refId": "A",
-          "repository": "waste_app_devops"
-        }
-      ],
-      "title": "Staging releases",
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "title",
-                "merged",
-                "merged_at"
-              ]
-            }
-          }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-github-datasource",
-        "uid": "PF911E414CF6BDFC5"
-      },
-      "fieldConfig": {
-        "defaults": {
           "custom": {
             "align": "auto",
             "cellOptions": {
@@ -212,10 +58,184 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 27,
+        "w": 6,
         "x": 0,
-        "y": 7
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-github-datasource",
+            "uid": "da518ee5-608f-422d-b212-0f58516f053d"
+          },
+          "options": {
+            "query": "label:backend,frontend,keycloak",
+            "timeField": 2
+          },
+          "owner": "only-chance-s",
+          "queryType": "Pull_Requests",
+          "refId": "A",
+          "repository": "only-chance-devops"
+        }
+      ],
+      "title": "All stg releases",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "title",
+                "merged_at"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-github-datasource",
+        "uid": "da518ee5-608f-422d-b212-0f58516f053d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 27,
+        "w": 5,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-github-datasource",
+            "uid": "da518ee5-608f-422d-b212-0f58516f053d"
+          },
+          "options": {
+            "query": "label:backend",
+            "timeField": 2
+          },
+          "owner": "only-chance-s",
+          "queryType": "Pull_Requests",
+          "refId": "A",
+          "repository": "only-chance-devops"
+        }
+      ],
+      "title": "All stg BE releases",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "title",
+                "merged_at"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-github-datasource",
+        "uid": "da518ee5-608f-422d-b212-0f58516f053d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 27,
+        "w": 6,
+        "x": 11,
+        "y": 0
       },
       "id": 3,
       "options": {
@@ -228,37 +248,34 @@
           ],
           "show": false
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "published_at"
-          }
-        ]
+        "showHeader": true
       },
       "pluginVersion": "10.3.3",
       "targets": [
         {
           "datasource": {
             "type": "grafana-github-datasource",
-            "uid": "PF911E414CF6BDFC5"
+            "uid": "da518ee5-608f-422d-b212-0f58516f053d"
           },
-          "owner": "eco-heroes",
-          "queryType": "Releases",
+          "options": {
+            "query": "label:frontend",
+            "timeField": 2
+          },
+          "owner": "only-chance-s",
+          "queryType": "Pull_Requests",
           "refId": "A",
-          "repository": "waste_app"
+          "repository": "only-chance-devops"
         }
       ],
-      "title": "Backend Releases",
+      "title": "All stg FE releases",
       "transformations": [
         {
           "id": "filterFieldsByName",
           "options": {
             "include": {
               "names": [
-                "is_prerelease",
-                "published_at",
-                "tag"
+                "title",
+                "merged_at"
               ]
             }
           }
@@ -269,10 +286,13 @@
     {
       "datasource": {
         "type": "grafana-github-datasource",
-        "uid": "PF911E414CF6BDFC5"
+        "uid": "da518ee5-608f-422d-b212-0f58516f053d"
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {
             "align": "auto",
             "cellOptions": {
@@ -299,10 +319,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 7
+        "h": 27,
+        "w": 7,
+        "x": 17,
+        "y": 0
       },
       "id": 4,
       "options": {
@@ -315,37 +335,34 @@
           ],
           "show": false
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "published_at"
-          }
-        ]
+        "showHeader": true
       },
       "pluginVersion": "10.3.3",
       "targets": [
         {
           "datasource": {
             "type": "grafana-github-datasource",
-            "uid": "PF911E414CF6BDFC5"
+            "uid": "da518ee5-608f-422d-b212-0f58516f053d"
           },
-          "owner": "eco-heroes",
-          "queryType": "Releases",
+          "options": {
+            "query": "label:keycloak",
+            "timeField": 2
+          },
+          "owner": "only-chance-s",
+          "queryType": "Pull_Requests",
           "refId": "A",
-          "repository": "waste_app_web"
+          "repository": "only-chance-devops"
         }
       ],
-      "title": "Frontend Releases",
+      "title": "All stg Keycloak releases",
       "transformations": [
         {
           "id": "filterFieldsByName",
           "options": {
             "include": {
               "names": [
-                "is_prerelease",
-                "published_at",
-                "tag"
+                "title",
+                "merged_at"
               ]
             }
           }
@@ -361,13 +378,13 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-5y",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Github",
   "uid": "d6c9d0cb-71ca-49b2-8548-a424a899529a",
-  "version": 17,
+  "version": 1,
   "weekStart": ""
 }
