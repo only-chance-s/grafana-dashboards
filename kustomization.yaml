@@ -47,4 +47,4 @@ configMapGenerator:
   files: [ dashboards/postgresql-db-staging.json ]
 
 - name: loki-logs
-  files" [ dashboards/loki-logs.json ]
+  files: [ dashboards/loki-logs.json ]
