@@ -37,11 +37,14 @@ configMapGenerator:
 - name: dashboards-k8s-addons-prometheus
   files: [ dashboards/k8s-addons-prometheus.json ]
 
-- name: app-monitoring-staging
-  files: [ dashboards/app_monitoring_staging.json ]
+- name: staging-app-monitoring
+  files: [ dashboards/staging_app_monitoring.json ]
 
 - name: github
   files: [ dashboards/github-dashboard.json ]
 
 - name: dashboards-postgresql-db-staging
   files: [ dashboards/postgresql-db-staging.json ]
+
+- name: loki-logs
+  files: [ dashboards/loki-logs.json ]
