@@ -20,7 +20,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 13359,
   "graphTooltip": 0,
-  "id": 26,
+  "id": 6,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -54,7 +54,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "{container=~\"$container\"} |~ \"(?i)$search\"",
+          "expr": "{container=~\"$container\"} |~ \"(?i)$search\"   | json | __error__ != \"JSONParserErr\"",
           "legendFormat": "",
           "refId": "A"
         }
@@ -71,9 +71,13 @@
       {
         "allValue": ".+",
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "api-deployment"
+          ],
+          "value": [
+            "api-deployment"
+          ]
         },
         "datasource": {
           "type": "loki",
@@ -139,6 +143,6 @@
   "timezone": "",
   "title": "Loki Logs - Quicksearch",
   "uid": "7ecZpUkRk",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
