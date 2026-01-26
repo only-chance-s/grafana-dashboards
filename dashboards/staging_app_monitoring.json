@@ -108,7 +108,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "quantile_over_time(0.8,\n  (\n    {job=\"staging-ns/api-deployment\"}\n    |= `\"event\": \"finished\"`\n    | json\n    | unwrap process_time_ms\n    [${__range_s}s]\n  )\n) by (url)",
+          "expr": "quantile_over_time(0.8,\n  (\n    {job=\"staging-ns/staging-api\"}\n    |= `\"event\": \"finished\"`\n    | json\n    | unwrap process_time_ms\n    [${__range_s}s]\n  )\n) by (url)",
           "legendFormat": "{{url}}",
           "queryType": "range",
           "refId": "A"
@@ -171,7 +171,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(\n  count_over_time(\n    {job=\"staging-ns/api-deployment\"}\n    |= `\"event\": \"finished\"`\n    |= `\"level\": \"INFO\"`\n    [${__range_s}s]\n  )\n)",
+          "expr": "sum(\n  count_over_time(\n    {job=\"staging-ns/staging-api\"}\n    |= `\"event\": \"finished\"`\n    |= `\"level\": \"INFO\"`\n    [${__range_s}s]\n  )\n)",
           "queryType": "instant",
           "refId": "A"
         }
@@ -237,7 +237,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(\n  count_over_time(\n    {job=\"staging-ns/api-deployment\"}\n    |= `\"level\": \"ERROR\"`\n    [${__range_s}s]\n  )\n)",
+          "expr": "sum(\n  count_over_time(\n    {job=\"staging-ns/staging-api\"}\n    |= `\"level\": \"ERROR\"`\n    [${__range_s}s]\n  )\n)",
           "queryType": "instant",
           "refId": "A"
         }
@@ -304,7 +304,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(\n  count_over_time(\n    {job=\"staging-ns/api-deployment\"} |= `\"level\": \"ERROR\"` [${__range_s}s]\n  )\n)\n/\nsum(\n  count_over_time(\n    {job=\"staging-ns/api-deployment\"} |= `\"level\": \"INFO\"` [${__range_s}s]\n  )\n)\n* 100",
+          "expr": "sum(\n  count_over_time(\n    {job=\"staging-ns/staging-api\"} |= `\"level\": \"ERROR\"` [${__range_s}s]\n  )\n)\n/\nsum(\n  count_over_time(\n    {job=\"staging-ns/staging-api\"} |= `\"level\": \"INFO\"` [${__range_s}s]\n  )\n)\n* 100",
           "legendFormat": "%",
           "queryType": "range",
           "refId": "A"
@@ -367,7 +367,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (status_code) (\n  count_over_time(\n    {job=\"staging-ns/api-deployment\"}\n    |= `\"status_code\":`\n    | json\n    | __error__ = \"\"\n    [${__range_s}s]\n  )\n)",
+          "expr": "sum by (status_code) (\n  count_over_time(\n    {job=\"staging-ns/staging-api\"}\n    |= `\"status_code\":`\n    | json\n    | __error__ = \"\"\n    [${__range_s}s]\n  )\n)",
           "legendFormat": "{{status_code}}",
           "queryType": "range",
           "refId": "A"
