@@ -725,6 +725,7 @@
         "x": 0,
         "y": 5
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
@@ -852,6 +853,7 @@
         "x": 12,
         "y": 5
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
@@ -974,6 +976,7 @@
         "x": 0,
         "y": 14
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "ms",
@@ -1064,6 +1067,7 @@
         "x": 12,
         "y": 14
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "ms",
@@ -1422,6 +1426,7 @@
         "x": 0,
         "y": 34
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "s",
@@ -1488,6 +1493,7 @@
         "x": 8,
         "y": 34
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
@@ -1554,6 +1560,7 @@
         "x": 16,
         "y": 34
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "short",
@@ -1671,6 +1678,7 @@
         "x": 0,
         "y": 43
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "cores",
@@ -1775,6 +1783,7 @@
         "x": 8,
         "y": 43
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "bytes",
@@ -1879,6 +1888,7 @@
         "x": 16,
         "y": 43
       },
+      "interval": "2m",
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
@@ -1958,6 +1968,7 @@
             "x": 0,
             "y": 52
           },
+          "interval": "2m",
           "fieldConfig": {
             "defaults": {
               "unit": "short",
