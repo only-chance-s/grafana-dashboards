@@ -1,0 +1,2224 @@
+{
+  "uid": "staging-jobs",
+  "title": "Staging jobs and backups",
+  "description": "Every CronJob on the staging cluster: freshness against its schedule, failures, run times and running Jobs, with payment jobs (dispatchers, reconciliation, financial backlogs) and backups called out.",
+  "tags": [
+    "staging",
+    "cronjobs",
+    "payments",
+    "backups"
+  ],
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "timezone": "",
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "links": [
+    {
+      "title": "Staging deployments",
+      "type": "link",
+      "icon": "dashboard",
+      "url": "/d/staging-deployments",
+      "keepTime": true,
+      "includeVars": false,
+      "targetBlank": false,
+      "tooltip": "",
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Staging data layer",
+      "type": "link",
+      "icon": "dashboard",
+      "url": "/d/staging-data-layer",
+      "keepTime": true,
+      "includeVars": false,
+      "targetBlank": false,
+      "tooltip": "",
+      "asDropdown": false,
+      "tags": []
+    },
+    {
+      "title": "Staging edge and dependencies",
+      "type": "link",
+      "icon": "dashboard",
+      "url": "/d/staging-edge",
+      "keepTime": true,
+      "includeVars": false,
+      "targetBlank": false,
+      "tooltip": "",
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "orange",
+        "name": "Deployment rollouts",
+        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"staging-ns\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"staging-ns\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
+        "step": "1m",
+        "titleFormat": "Rollout",
+        "textFormat": "{{deployment}} → {{replicaset}}",
+        "tagKeys": "deployment",
+        "useValueForTime": true
+      }
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false
+      },
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_cronjob_info, namespace)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kube_cronjob_info, namespace)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "options": [],
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Active CronJobs",
+      "description": "CronJobs that are not suspended.",
+      "id": 1,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count(max by (namespace, cronjob) (kube_cronjob_spec_suspend{namespace=~\"$namespace\"}) == 0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Overdue",
+      "description": "Active CronJobs that have missed at least one scheduled run since their last success.",
+      "id": 2,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count((clamp_min(floor((time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\"}))) / ((max by (namespace, cronjob) (kube_cronjob_next_schedule_time{namespace=~\"$namespace\"}) - max by (namespace, cronjob) (kube_cronjob_status_last_schedule_time{namespace=~\"$namespace\"})) > 0)) - 1, 0) unless on (namespace, cronjob) (max by (namespace, cronjob) (kube_cronjob_spec_suspend{namespace=~\"$namespace\"}) == 1)) >= 1) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Failed runs",
+      "description": "Jobs created in the selected range that ended in failure.",
+      "id": 3,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(count by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"}))) or max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"}) * 0) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Running now",
+      "description": "Jobs currently running.",
+      "id": 4,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(kube_cronjob_status_active{namespace=~\"$namespace\"}) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Payment dispatch freshness",
+      "description": "Longest time since the last success across the refund, invoicing and Stripe webhook dispatchers (every minute). Their stale alerts fire at 900 s.",
+      "id": 5,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max((time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)\"}))))",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 900
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Financial backlog",
+      "description": "Items waiting in the Stripe reconciliation, refund recovery and fiscal review backlogs (financial-health collector).",
+      "id": 6,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(only_chance_financial_backlog_items) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Oldest backup",
+      "description": "Time since the least recent successful backup across PostgreSQL (api, blog, keycloak, windmill) and LibreDesk. Backups run nightly; the stale alerts fire at 26 hours.",
+      "id": 7,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max((time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}))))",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 90000
+              },
+              {
+                "color": "red",
+                "value": 93600
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Failed backups",
+      "description": "Backup Jobs created in the selected range that failed.",
+      "id": 8,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(count by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}))) or max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}) * 0) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "row",
+      "title": "All CronJobs",
+      "id": 9,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "panels": []
+    },
+    {
+      "type": "table",
+      "title": "CronJobs",
+      "description": "Every CronJob with its schedule, last success and missed runs (scheduled runs elapsed since the last success), plus failures and run times for Jobs created in the last 24 hours. Longest run / interval shows how close a job comes to overrunning its schedule. Fixed to 24 hours because run times scan every Job (about 11k a day); the Backups table and the panels follow the time picker.",
+      "id": 10,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(max by (namespace, cronjob, schedule) (kube_cronjob_info{namespace=~\"$namespace\"}), \"group\", \"Platform\", \"cronjob\", \".*\"), \"group\", \"Integrations\", \"cronjob\", \"staging-crm-.*|staging-api-(analytics-.*|product-analytics-.*)\"), \"group\", \"Bookings & race\", \"cronjob\", \"staging-api-(reservation-expiry|race-reconciliation)|staging-race-.*\"), \"group\", \"Payments\", \"cronjob\", \"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"), \"group\", \"Backups\", \"cronjob\", \".*backup.*\")",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) (kube_cronjob_spec_suspend{namespace=~\"$namespace\"})",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\"}) * 1000",
+          "refId": "C",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "clamp_min(floor((time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\"}))) / ((max by (namespace, cronjob) (kube_cronjob_next_schedule_time{namespace=~\"$namespace\"}) - max by (namespace, cronjob) (kube_cronjob_status_last_schedule_time{namespace=~\"$namespace\"})) > 0)) - 1, 0) unless on (namespace, cronjob) (max by (namespace, cronjob) (kube_cronjob_spec_suspend{namespace=~\"$namespace\"}) == 1)",
+          "refId": "D",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"}))) or max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"}) * 0",
+          "refId": "E",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "avg by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"})))",
+          "refId": "F",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"})))",
+          "refId": "G",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"}))) / ((max by (namespace, cronjob) (kube_cronjob_next_schedule_time{namespace=~\"$namespace\"}) - max by (namespace, cronjob) (kube_cronjob_status_last_schedule_time{namespace=~\"$namespace\"})) > 0) * 100",
+          "refId": "H",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) (kube_cronjob_status_active{namespace=~\"$namespace\"})",
+          "refId": "I",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true
+            },
+            "indexByName": {
+              "group": 0,
+              "namespace": 1,
+              "cronjob": 2,
+              "schedule": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "Value #D": 6,
+              "Value #E": 7,
+              "Value #F": 8,
+              "Value #G": 9,
+              "Value #H": 10,
+              "Value #I": 11
+            },
+            "renameByName": {
+              "group": "Group",
+              "namespace": "Namespace",
+              "cronjob": "CronJob",
+              "schedule": "Schedule",
+              "Value #B": "State",
+              "Value #C": "Last success",
+              "Value #D": "Missed runs",
+              "Value #E": "Failed runs",
+              "Value #F": "Avg run",
+              "Value #G": "Longest run",
+              "Value #H": "Longest run / interval",
+              "Value #I": "Running"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Group"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Payments": {
+                        "color": "purple",
+                        "index": 0
+                      },
+                      "Backups": {
+                        "color": "blue",
+                        "index": 1
+                      },
+                      "Bookings & race": {
+                        "color": "orange",
+                        "index": 2
+                      },
+                      "Integrations": {
+                        "color": "green",
+                        "index": 3
+                      },
+                      "Platform": {
+                        "color": "text",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "Active",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "Suspended",
+                        "color": "text",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last success"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Missed runs"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed runs"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg run"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Longest run"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Longest run / interval"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Running"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Missed runs",
+            "desc": true
+          }
+        ]
+      },
+      "timeFrom": "24h"
+    },
+    {
+      "type": "row",
+      "title": "Payments",
+      "id": 11,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Time since last success",
+      "description": "Seconds since each payment CronJob last succeeded. The dispatchers run every minute and alert at 900 s; Stripe reconciliation runs nightly.",
+      "id": 12,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "(time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"})))",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{cronjob}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 900
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Financial backlog",
+      "description": "Items waiting per backlog kind, reported by the financial-health CronJob every 5 minutes.",
+      "id": 13,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 20
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (kind) (only_chance_financial_backlog_items)",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{kind}} items"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Oldest backlog item",
+      "description": "Age of the oldest waiting item per backlog kind.",
+      "id": 14,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 20
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (kind) (only_chance_financial_backlog_oldest_age_seconds)",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{kind}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Run time of every-minute jobs",
+      "description": "Run time of the finished Jobs Kubernetes still keeps, for the CronJobs that run every minute. They use concurrencyPolicy Forbid, so a run longer than 60 s makes the next one skip.",
+      "id": 15,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (cronjob) ((((label_replace((max by (namespace, job_name) (kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|staging-api-(reservation-expiry|race-reconciliation))-[0-9]{8,}\"}) - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|staging-api-(reservation-expiry|race-reconciliation))-[0-9]{8,}\"})), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or ((max by (namespace, job_name) (kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}) - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"})) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}, \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|staging-api-(reservation-expiry|race-reconciliation)\"})))",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{cronjob}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 45
+              },
+              {
+                "color": "red",
+                "value": 60
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Backups",
+      "id": 16,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "panels": []
+    },
+    {
+      "type": "table",
+      "title": "Backup CronJobs",
+      "description": "PostgreSQL and LibreDesk backup CronJobs. Failures and run times cover Jobs created in the selected range.",
+      "id": 17,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(max by (namespace, cronjob, schedule) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}), \"group\", \"Platform\", \"cronjob\", \".*\"), \"group\", \"Integrations\", \"cronjob\", \"staging-crm-.*|staging-api-(analytics-.*|product-analytics-.*)\"), \"group\", \"Bookings & race\", \"cronjob\", \"staging-api-(reservation-expiry|race-reconciliation)|staging-race-.*\"), \"group\", \"Payments\", \"cronjob\", \"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"), \"group\", \"Backups\", \"cronjob\", \".*backup.*\")",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) (kube_cronjob_spec_suspend{namespace=~\"$namespace\", cronjob=~\".*backup.*\"})",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}) * 1000",
+          "refId": "C",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "(clamp_min(floor((time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}))) / ((max by (namespace, cronjob) (kube_cronjob_next_schedule_time{namespace=~\"$namespace\"}) - max by (namespace, cronjob) (kube_cronjob_status_last_schedule_time{namespace=~\"$namespace\"})) > 0)) - 1, 0) unless on (namespace, cronjob) (max by (namespace, cronjob) (kube_cronjob_spec_suspend{namespace=~\"$namespace\"}) == 1)) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"})",
+          "refId": "D",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_failed{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\", condition=\"true\"}[$__range])) == 1) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}))) or max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}) * 0",
+          "refId": "E",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "avg by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"})))",
+          "refId": "F",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"})))",
+          "refId": "G",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) ((((label_replace(((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name=~\"(.*backup.*)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((max by (namespace, job_name) (max_over_time(kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) - max by (namespace, job_name) (max_over_time(kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]))) and on (namespace, job_name) (max by (namespace, job_name) (max_over_time(kube_job_created{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range])) > (time() - $__range_s))) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(max_over_time(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}[$__range]), \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}))) / ((max by (namespace, cronjob) (kube_cronjob_next_schedule_time{namespace=~\"$namespace\"}) - max by (namespace, cronjob) (kube_cronjob_status_last_schedule_time{namespace=~\"$namespace\"})) > 0) * 100",
+          "refId": "H",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob) (kube_cronjob_status_active{namespace=~\"$namespace\", cronjob=~\".*backup.*\"})",
+          "refId": "I",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true
+            },
+            "indexByName": {
+              "group": 0,
+              "namespace": 1,
+              "cronjob": 2,
+              "schedule": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "Value #D": 6,
+              "Value #E": 7,
+              "Value #F": 8,
+              "Value #G": 9,
+              "Value #H": 10,
+              "Value #I": 11
+            },
+            "renameByName": {
+              "group": "Group",
+              "namespace": "Namespace",
+              "cronjob": "CronJob",
+              "schedule": "Schedule",
+              "Value #B": "State",
+              "Value #C": "Last success",
+              "Value #D": "Missed runs",
+              "Value #E": "Failed runs",
+              "Value #F": "Avg run",
+              "Value #G": "Longest run",
+              "Value #H": "Longest run / interval",
+              "Value #I": "Running"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Group"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Payments": {
+                        "color": "purple",
+                        "index": 0
+                      },
+                      "Backups": {
+                        "color": "blue",
+                        "index": 1
+                      },
+                      "Bookings & race": {
+                        "color": "orange",
+                        "index": 2
+                      },
+                      "Integrations": {
+                        "color": "green",
+                        "index": 3
+                      },
+                      "Platform": {
+                        "color": "text",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "Active",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "Suspended",
+                        "color": "text",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last success"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Missed runs"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed runs"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg run"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Longest run"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Longest run / interval"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Running"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Missed runs",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Time since last successful backup",
+      "description": "Backups run nightly; anything above 26 hours means a night was missed.",
+      "id": 18,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "(time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\".*backup.*\"})))",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{cronjob}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 93600
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Failures and running Jobs",
+      "id": 19,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Failed Jobs kept by Kubernetes",
+      "description": "Failed Jobs that still exist, per CronJob. Kubernetes keeps only the last few (failedJobsHistoryLimit), so a line appears when a run fails and can stay until the Job is cleaned up.",
+      "id": 20,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 53
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count by (cronjob) ((((label_replace((max by (namespace, job_name) (kube_job_failed{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\", condition=\"true\"}) == 1), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or ((max by (namespace, job_name) (kube_job_failed{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\", condition=\"true\"}) == 1) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}, \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"})))",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{cronjob}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "noValue": "No failed Jobs"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "table",
+      "title": "Running now",
+      "description": "Jobs running right now and how long they have been running.",
+      "id": 21,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 53
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, cronjob, job_name) ((((label_replace(((time() - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"})) and on (namespace, job_name) (max by (namespace, job_name) (kube_job_status_active{namespace=~\"$namespace\", job_name=~\"(.+)-[0-9]{8,}\"}) > 0)), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or (((time() - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"})) and on (namespace, job_name) (max by (namespace, job_name) (kube_job_status_active{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}) > 0)) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}, \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\"})))",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "namespace": "Namespace",
+              "cronjob": "CronJob",
+              "job_name": "Job",
+              "Value": "Running for"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "No Jobs running"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Running for"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 300
+                    },
+                    {
+                      "color": "red",
+                      "value": 3600
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Running for",
+            "desc": true
+          }
+        ]
+      }
+    }
+  ],
+  "version": 1,
+  "weekStart": ""
+}
