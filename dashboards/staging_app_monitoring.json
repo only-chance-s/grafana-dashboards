@@ -1399,9 +1399,9 @@
       }
     },
     {
-      "id": 17,
       "type": "row",
-      "title": "Dependencies and database",
+      "title": "WebSocket sessions",
+      "id": 28,
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -1412,10 +1412,10 @@
       "panels": []
     },
     {
-      "id": 18,
+      "id": 29,
       "type": "timeseries",
-      "title": "Dependency p95",
-      "description": "95th percentile duration of calls to Postgres, Redis, Keycloak, Stripe and JWKS.",
+      "title": "Sessions ended per minute",
+      "description": "WebSocket sessions per route, counted when they close. From Tempo span metrics (traffic.class=realtime); the HTTP panels above never include WebSocket sessions.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -1424,6 +1424,72 @@
         "h": 8,
         "w": 8,
         "x": 0,
+        "y": 34
+      },
+      "interval": "2m",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) * 60",
+          "refId": "A",
+          "legendFormat": "{{span_name}}",
+          "editorMode": "code",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "type": "timeseries",
+      "title": "Average session length",
+      "description": "Mean length of WebSocket sessions that closed. Long values are normal: a session stays open while a client is connected. From Tempo span metrics (traffic.class=realtime); the HTTP panels above never include WebSocket sessions.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
         "y": 34
       },
       "interval": "2m",
@@ -1469,7 +1535,152 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, dependency, operation) (rate(only_chance_dependency_duration_seconds_bucket{job=\"$app\"}[$__rate_interval])))",
+          "expr": "sum by (span_name) (rate(traces_spanmetrics_latency_sum{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) / (sum by (span_name) (rate(traces_spanmetrics_latency_count{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) > 0)",
+          "refId": "A",
+          "legendFormat": "{{span_name}}",
+          "editorMode": "code",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "Sessions ended with error",
+      "description": "Share of WebSocket sessions whose server span ended in error (unhandled exception). Shows 0% when sessions closed cleanly. From Tempo span metrics (traffic.class=realtime); the HTTP panels above never include WebSocket sessions.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 34
+      },
+      "interval": "2m",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "(sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\"}[$__rate_interval])) or sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) * 0) / (sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) > 0) * 100",
+          "refId": "A",
+          "legendFormat": "{{span_name}}",
+          "editorMode": "code",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "Dependencies and database",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "panels": []
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Dependency p95",
+      "description": "95th percentile duration of calls to Postgres, Redis, Keycloak, Stripe and JWKS. Excludes the readiness probe's health checks (operation=health).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 43
+      },
+      "interval": "2m",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, dependency, operation) (rate(only_chance_dependency_duration_seconds_bucket{job=\"$app\", operation!=\"health\"}[$__rate_interval])))",
           "refId": "A",
           "legendFormat": "{{dependency}} {{operation}}",
           "editorMode": "code",
@@ -1482,7 +1693,7 @@
       "id": 19,
       "type": "timeseries",
       "title": "Dependency errors / s",
-      "description": "Failed dependency calls per second.",
+      "description": "Failed dependency calls per second. Excludes the readiness probe's health checks (operation=health).",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -1491,7 +1702,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 34
+        "y": 43
       },
       "interval": "2m",
       "fieldConfig": {
@@ -1536,7 +1747,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (dependency) (rate(only_chance_dependency_duration_seconds_count{job=\"$app\", outcome=\"error\"}[$__rate_interval]))",
+          "expr": "sum by (dependency) (rate(only_chance_dependency_duration_seconds_count{job=\"$app\", operation!=\"health\", outcome=\"error\"}[$__rate_interval]))",
           "refId": "A",
           "legendFormat": "{{dependency}}",
           "editorMode": "code",
@@ -1558,7 +1769,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 34
+        "y": 43
       },
       "interval": "2m",
       "fieldConfig": {
@@ -1659,7 +1870,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 51
       },
       "panels": []
     },
@@ -1676,7 +1887,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 43
+        "y": 52
       },
       "interval": "2m",
       "fieldConfig": {
@@ -1781,7 +1992,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 43
+        "y": 52
       },
       "interval": "2m",
       "fieldConfig": {
@@ -1886,7 +2097,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 43
+        "y": 52
       },
       "interval": "2m",
       "fieldConfig": {
@@ -1950,7 +2161,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 60
       },
       "panels": [
         {
@@ -1966,7 +2177,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 52
+            "y": 61
           },
           "interval": "2m",
           "fieldConfig": {
@@ -2078,7 +2289,7 @@
             "h": 12,
             "w": 24,
             "x": 0,
-            "y": 59
+            "y": 68
           },
           "options": {
             "showTime": true,
