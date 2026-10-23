@@ -56,16 +56,7 @@
         "y": 0
       },
       "id": 1,
-      "options": {
-        "edges": {
-          "mainStatUnit": "s",
-          "secondaryStatUnit": "rps"
-        },
-        "nodes": {
-          "mainStatUnit": "rps",
-          "secondaryStatUnit": "ms"
-        }
-      },
+      "options": {},
       "targets": [
         {
           "datasource": {
