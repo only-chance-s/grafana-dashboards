@@ -733,7 +733,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 10,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "normal",
@@ -861,7 +861,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -927,7 +927,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate({__name__=\"http_server_duration_milliseconds_count\", job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\", http_status_code=~\"5..\"}[$__rate_interval])) / (sum(rate(http_server_duration_milliseconds_count{job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\"}[$__rate_interval])) > 0) * 100",
+          "expr": "(sum(rate({__name__=\"http_server_duration_milliseconds_count\", job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\", http_status_code=~\"5..\"}[$__rate_interval])) or sum(rate(http_server_duration_milliseconds_count{job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\"}[$__rate_interval])) * 0) / (sum(rate(http_server_duration_milliseconds_count{job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\"}[$__rate_interval])) > 0) * 100",
           "refId": "A",
           "legendFormat": "5xx",
           "editorMode": "code",
@@ -939,7 +939,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate({__name__=\"http_server_duration_milliseconds_count\", job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\", http_status_code=~\"4..\"}[$__rate_interval])) / (sum(rate(http_server_duration_milliseconds_count{job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\"}[$__rate_interval])) > 0) * 100",
+          "expr": "(sum(rate({__name__=\"http_server_duration_milliseconds_count\", job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\", http_status_code=~\"4..\"}[$__rate_interval])) or sum(rate(http_server_duration_milliseconds_count{job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\"}[$__rate_interval])) * 0) / (sum(rate(http_server_duration_milliseconds_count{job=\"$app\", http_target=~\"$route\", http_target!~\"/(livez|readyz|healthz|metrics)\"}[$__rate_interval])) > 0) * 100",
           "refId": "B",
           "legendFormat": "4xx",
           "editorMode": "code",
@@ -984,7 +984,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -1075,7 +1075,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -1434,7 +1434,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -1451,7 +1451,7 @@
       "options": {
         "legend": {
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "calcs": [
             "mean",
             "max"
@@ -1501,7 +1501,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 10,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "normal",
@@ -1518,7 +1518,7 @@
       "options": {
         "legend": {
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "calcs": [
             "mean",
             "max"
@@ -1568,7 +1568,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -1611,7 +1611,7 @@
       "options": {
         "legend": {
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "calcs": [
             "mean",
             "max"
@@ -1686,7 +1686,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -1729,7 +1729,7 @@
       "options": {
         "legend": {
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "calcs": [
             "mean",
             "max"
@@ -1791,7 +1791,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -1834,7 +1834,7 @@
       "options": {
         "legend": {
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "calcs": [
             "mean",
             "max"
@@ -1896,7 +1896,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 0,
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "mode": "none",
@@ -1914,7 +1914,7 @@
       "options": {
         "legend": {
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "calcs": [
             "mean",
             "max"
@@ -1976,7 +1976,7 @@
                 "drawStyle": "line",
                 "lineWidth": 1,
                 "fillOpacity": 10,
-                "showPoints": "never",
+                "showPoints": "auto",
                 "spanNulls": false,
                 "stacking": {
                   "mode": "normal",
