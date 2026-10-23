@@ -57,3 +57,6 @@ configMapGenerator:
 
 - name: staging-edge
   files: [ dashboards/staging-edge.json ]
+
+- name: staging-jobs
+  files: [ dashboards/staging-jobs.json ]
