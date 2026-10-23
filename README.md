@@ -21,6 +21,17 @@
   - [Broken panels on k8s-views-nodes due to the nodename label](#broken-panels-on-k8s-views-nodes-due-to-the-nodename-label)
 - [Contributing](#contributing)
 
+## How Only Chance uses this repository
+
+Grafana at [monitoring.only-chance.com](https://monitoring.only-chance.com) syncs every file under `dashboards/` with [Git Sync](https://grafana.com/docs/grafana/latest/as-code/observability-as-code/git-sync/) into the `grafana-dashboards` folder.
+
+- Edit dashboards in the Grafana UI and save: Grafana pushes a branch and offers a pull request. Merging the pull request updates Grafana within a minute.
+- Direct pushes to `main` are blocked; every change goes through a pull request.
+- `unsynced/` holds dashboards that are kept for reference but not loaded (they need a datasource or plugin we do not run).
+- This repository is public. Do not put credentials, internal hostnames or sensitive query values in dashboards.
+
+Operational details and rollback: `docs/grafana-git-sync.md` in `only-chance-s/only-chance-devops`.
+
 ## Description
 
 This repository contains a modern set of [Grafana](https://github.com/grafana/grafana) dashboards for [Kubernetes](https://github.com/kubernetes/kubernetes).\
