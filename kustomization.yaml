@@ -48,3 +48,6 @@ configMapGenerator:
 
 - name: loki-logs
   files: [ dashboards/loki-logs.json ]
+
+- name: staging-deployments
+  files: [ dashboards/staging-deployments.json ]
