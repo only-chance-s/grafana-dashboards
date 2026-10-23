@@ -1412,6 +1412,73 @@
       "panels": []
     },
     {
+      "id": 32,
+      "type": "timeseries",
+      "title": "Open connections",
+      "description": "WebSocket connections open right now, by channel, summed over the app's pods. From the app's only_chance_websocket_connections gauge, which rises when a WebSocket handler starts and falls when it returns. Shows 0 when no pod has an open connection: a pod only reports the gauge after its first WebSocket client.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 34
+      },
+      "interval": "2m",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (channel) (only_chance_websocket_connections{job=\"$app\"}) or on() label_replace(vector(0), \"channel\", \"none open\", \"\", \"\")",
+          "refId": "A",
+          "legendFormat": "{{channel}}",
+          "editorMode": "code",
+          "range": true
+        }
+      ]
+    },
+    {
       "id": 29,
       "type": "timeseries",
       "title": "Sessions ended per minute",
@@ -1422,8 +1489,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 0,
+        "w": 6,
+        "x": 6,
         "y": 34
       },
       "interval": "2m",
@@ -1488,8 +1555,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 8,
+        "w": 6,
+        "x": 12,
         "y": 34
       },
       "interval": "2m",
@@ -1554,8 +1621,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 16,
+        "w": 6,
+        "x": 18,
         "y": 34
       },
       "interval": "2m",
