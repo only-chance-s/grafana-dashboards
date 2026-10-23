@@ -54,3 +54,6 @@ configMapGenerator:
 
 - name: staging-data-layer
   files: [ dashboards/staging-data-layer.json ]
+
+- name: staging-edge
+  files: [ dashboards/staging-edge.json ]
