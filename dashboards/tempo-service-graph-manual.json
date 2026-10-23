@@ -26,7 +26,7 @@
         "type": "tempo",
         "uid": "${datasource}"
       },
-      "description": "Visualizes the relationship between services based on traces. Requires Tempo Metrics Generator.",
+      "description": "Real HTTP requests to the API services and the database, Redis and Keycloak calls they make. Excludes health probes, WebSocket sessions and background work (traffic.class=api).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -50,7 +50,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 22,
+        "h": 14,
         "w": 24,
         "x": 0,
         "y": 0
@@ -64,10 +64,225 @@
             "uid": "${datasource}"
           },
           "queryType": "serviceMap",
-          "refId": "A"
+          "refId": "A",
+          "serviceMapQuery": [
+            "{server_traffic_class=\"api\"}",
+            "{client_traffic_class=\"api\"}"
+          ]
         }
       ],
-      "title": "Service Graph (Tempo)",
+      "title": "API traffic",
+      "type": "nodeGraph"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${datasource}"
+      },
+      "description": "Long-lived WebSocket connections. Durations are session lengths, not request latency (traffic.class=realtime).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 2,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${datasource}"
+          },
+          "queryType": "serviceMap",
+          "refId": "A",
+          "serviceMapQuery": [
+            "{server_traffic_class=\"realtime\"}",
+            "{client_traffic_class=\"realtime\"}"
+          ]
+        }
+      ],
+      "title": "Realtime: WebSocket sessions",
+      "type": "nodeGraph"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${datasource}"
+      },
+      "description": "Taskiq workers, scheduled jobs and API background loops. Blocking queue reads make Redis latency high by design (traffic.class=worker, job, background).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 3,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${datasource}"
+          },
+          "queryType": "serviceMap",
+          "refId": "A",
+          "serviceMapQuery": [
+            "{server_traffic_class=~\"worker|job|background\"}",
+            "{client_traffic_class=~\"worker|job|background\"}"
+          ]
+        }
+      ],
+      "title": "Background: workers, CronJobs, in-process loops",
+      "type": "nodeGraph"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${datasource}"
+      },
+      "description": "Kubelet liveness and readiness checks plus the external health check, including the database and Redis calls they make (traffic.class=probe).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 4,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${datasource}"
+          },
+          "queryType": "serviceMap",
+          "refId": "A",
+          "serviceMapQuery": [
+            "{server_traffic_class=\"probe\"}",
+            "{client_traffic_class=\"probe\"}"
+          ]
+        }
+      ],
+      "title": "Health probes",
+      "type": "nodeGraph"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${datasource}"
+      },
+      "description": "Services that do not set traffic.class, such as Grafana and its datasources, Keycloak and Loki.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 5,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${datasource}"
+          },
+          "queryType": "serviceMap",
+          "refId": "A",
+          "serviceMapQuery": [
+            "{client_traffic_class=\"\", server_traffic_class=\"\"}"
+          ]
+        }
+      ],
+      "title": "Platform: Grafana, Keycloak, observability",
       "type": "nodeGraph"
     }
   ],
@@ -109,5 +324,6 @@
   "title": "Manual Service Graph (Tempo)",
   "uid": "tempo-service-graph-manual",
   "version": 1,
-  "weekStart": ""
+  "weekStart": "",
+  "description": "Tempo service graph split by traffic.class so probes, WebSocket sessions and background work do not mix into API rate and latency."
 }
