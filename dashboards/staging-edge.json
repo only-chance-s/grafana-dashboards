@@ -1899,8 +1899,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Average duration",
-      "description": "Mean call duration per dependency and operation. Percentiles are not shown: the histogram uses millisecond bucket boundaries on a seconds metric, so every call falls into the first bucket.",
+      "title": "Duration: p95 and mean",
+      "description": "95th percentile (solid) and mean (dashed) call duration per dependency and operation. p95 only counts series reporting the seconds-scale buckets introduced in backend alpha-0.0.400 (2026-10-23), so windows spanning that release are not blended with the older millisecond buckets.",
       "id": 25,
       "datasource": {
         "type": "prometheus",
@@ -1919,11 +1919,23 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (dependency, operation) (rate(only_chance_dependency_duration_seconds_sum[$__rate_interval])) / (sum by (dependency, operation) (rate(only_chance_dependency_duration_seconds_count[$__rate_interval])) > 0)",
+          "expr": "histogram_quantile(0.95, sum by (le, dependency, operation) (rate(only_chance_dependency_duration_seconds_bucket[$__rate_interval]) and on (instance, job, dependency, operation, outcome) last_over_time(only_chance_dependency_duration_seconds_bucket{le=\"0.0025\"}[$__rate_interval])))",
           "refId": "A",
           "range": true,
           "instant": false,
-          "legendFormat": "{{dependency}} · {{operation}}"
+          "legendFormat": "{{dependency}} · {{operation}} p95"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (dependency, operation) (rate(only_chance_dependency_duration_seconds_sum[$__rate_interval])) / (sum by (dependency, operation) (rate(only_chance_dependency_duration_seconds_count[$__rate_interval])) > 0)",
+          "refId": "B",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{dependency}} · {{operation}} mean"
         }
       ],
       "fieldConfig": {
@@ -1945,7 +1957,26 @@
             "mode": "palette-classic"
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".* mean$"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -2054,7 +2085,7 @@
     {
       "type": "table",
       "title": "Dependencies in selected range",
-      "description": "Calls, failures and mean duration per calling service, dependency and operation.",
+      "description": "Calls, failures, mean and p95 duration per calling service, dependency and operation over the selected range. p95 only counts series reporting the seconds-scale buckets introduced in backend alpha-0.0.400 (2026-10-23), so windows spanning that release are not blended with the older millisecond buckets.",
       "id": 27,
       "datasource": {
         "type": "prometheus",
@@ -2102,6 +2133,18 @@
           "range": false,
           "instant": true,
           "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, job, dependency, operation) (rate(only_chance_dependency_duration_seconds_bucket[$__range]) and on (instance, job, dependency, operation, outcome) last_over_time(only_chance_dependency_duration_seconds_bucket{le=\"0.0025\"}[$__range])))",
+          "refId": "D",
+          "range": false,
+          "instant": true,
+          "format": "table"
         }
       ],
       "transformations": [
@@ -2121,7 +2164,8 @@
               "operation": 2,
               "Value #A": 3,
               "Value #B": 4,
-              "Value #C": 5
+              "Value #C": 5,
+              "Value #D": 6
             },
             "renameByName": {
               "job": "Service",
@@ -2129,7 +2173,8 @@
               "operation": "Operation",
               "Value #A": "Calls",
               "Value #B": "Errors",
-              "Value #C": "Mean duration"
+              "Value #C": "Mean duration",
+              "Value #D": "p95 duration"
             }
           }
         }
@@ -2179,6 +2224,22 @@
             "matcher": {
               "id": "byName",
               "options": "Mean duration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95 duration"
             },
             "properties": [
               {
