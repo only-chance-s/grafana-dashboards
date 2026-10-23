@@ -1,0 +1,1921 @@
+{
+  "uid": "staging-deployments",
+  "title": "Staging deployments",
+  "description": "What is deployed to staging, when it changed and whether rollouts are healthy: Argo CD sync and health, running image tags, rollout progress, restarts, and deploy annotations.",
+  "tags": [
+    "staging",
+    "deployments",
+    "argocd"
+  ],
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "timezone": "",
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "links": [],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "blue",
+        "name": "Argo CD syncs",
+        "expr": "sum by (name, phase) (changes(argocd_app_sync_total{name=~\"$app\"}[2m])) > 0",
+        "step": "1m",
+        "titleFormat": "Argo CD sync",
+        "textFormat": "{{name}}: {{phase}}",
+        "tagKeys": "name,phase",
+        "useValueForTime": false
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "orange",
+        "name": "Deployment rollouts",
+        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"$namespace\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"$namespace\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
+        "step": "1m",
+        "titleFormat": "Rollout",
+        "textFormat": "{{deployment}} → {{replicaset}}",
+        "tagKeys": "deployment",
+        "useValueForTime": true
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "purple",
+        "name": "StatefulSet changes",
+        "expr": "max by (namespace, statefulset) (changes(kube_statefulset_metadata_generation{namespace=~\"$namespace\"}[2m])) > 0",
+        "step": "1m",
+        "titleFormat": "StatefulSet spec change",
+        "textFormat": "{{statefulset}}",
+        "tagKeys": "statefulset",
+        "useValueForTime": false
+      }
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false
+      },
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_deployment_created, namespace)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kube_deployment_created, namespace)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "current": {
+          "selected": true,
+          "text": [
+            "staging-ns"
+          ],
+          "value": [
+            "staging-ns"
+          ]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "options": [],
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "skipUrlSync": false
+      },
+      {
+        "name": "app",
+        "label": "Argo CD app",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(argocd_app_info, name)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(argocd_app_info, name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "hide": 0,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "options": [],
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Apps out of sync",
+      "description": "Argo CD applications whose live state differs from Git.",
+      "id": 1,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count(argocd_app_info{name=~\"$app\", sync_status!=\"Synced\"}) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Apps unhealthy",
+      "description": "Argo CD applications not reporting Healthy (Progressing, Degraded, Missing, Suspended or Unknown).",
+      "id": 2,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count(argocd_app_info{name=~\"$app\", health_status!=\"Healthy\"}) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Syncs in range",
+      "description": "Argo CD sync operations in the selected time range. The counter resets when the application controller restarts.",
+      "id": 3,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "round(sum(increase(argocd_app_sync_total{name=~\"$app\"}[$__range]))) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Failed syncs in range",
+      "description": "Argo CD sync operations that ended in Error or Failed in the selected time range.",
+      "id": 4,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "round(sum(increase(argocd_app_sync_total{name=~\"$app\", phase=~\"Error|Failed\"}[$__range]))) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Rollouts in progress",
+      "description": "Deployments that have not finished rolling out: fewer updated replicas than desired, or a spec change the controller has not observed yet.",
+      "id": 5,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count(((max by (namespace, deployment) (kube_deployment_status_replicas_updated{namespace=~\"$namespace\"})) < (max by (namespace, deployment) (kube_deployment_spec_replicas{namespace=~\"$namespace\"}))) or ((max by (namespace, deployment) (kube_deployment_metadata_generation{namespace=~\"$namespace\"})) > (max by (namespace, deployment) (kube_deployment_status_observed_generation{namespace=~\"$namespace\"})))) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Last rollout",
+      "description": "When the newest Deployment ReplicaSet was created, i.e. the latest pod template change (image tag, env or config).",
+      "id": 6,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max(kube_replicaset_created{namespace=~\"$namespace\"} and on (namespace, replicaset) kube_replicaset_owner{namespace=~\"$namespace\", owner_kind=\"Deployment\"}) * 1000",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeFromNow",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Restarts in range",
+      "description": "Container restarts in the selected namespaces and time range.",
+      "id": 7,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "round(sum(max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\"}[$__range])))) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Containers stuck",
+      "description": "Containers currently waiting in CrashLoopBackOff, image pull errors or container config errors.",
+      "id": 8,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "count(max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~\"$namespace\", reason=~\"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError|CreateContainerError\"} == 1)) or vector(0)",
+          "refId": "A",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "type": "row",
+      "title": "Argo CD applications",
+      "id": 9,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "panels": []
+    },
+    {
+      "type": "table",
+      "title": "Applications",
+      "description": "Sync and health status of every Argo CD application, with the number of syncs in the selected range.",
+      "id": 10,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 14,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (name, project, dest_namespace, sync_status, health_status, autosync_enabled) (argocd_app_info{name=~\"$app\"})",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "round(sum by (name) (increase(argocd_app_sync_total{name=~\"$app\"}[$__range]))) or (max by (name) (argocd_app_info{name=~\"$app\"}) * 0)",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true
+            },
+            "indexByName": {
+              "name": 0,
+              "project": 1,
+              "dest_namespace": 2,
+              "sync_status": 3,
+              "health_status": 4,
+              "autosync_enabled": 5,
+              "Value #B": 6
+            },
+            "renameByName": {
+              "name": "Application",
+              "project": "Project",
+              "dest_namespace": "Namespace",
+              "sync_status": "Sync",
+              "health_status": "Health",
+              "autosync_enabled": "Auto-sync",
+              "Value #B": "Syncs in range"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sync"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Synced": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "OutOfSync": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Unknown": {
+                        "color": "text",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Health"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Healthy": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Progressing": {
+                        "color": "blue",
+                        "index": 1
+                      },
+                      "Degraded": {
+                        "color": "red",
+                        "index": 2
+                      },
+                      "Missing": {
+                        "color": "red",
+                        "index": 3
+                      },
+                      "Suspended": {
+                        "color": "text",
+                        "index": 4
+                      },
+                      "Unknown": {
+                        "color": "text",
+                        "index": 5
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Application",
+            "desc": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Syncs per application",
+      "description": "Argo CD sync operations per interval, split by result phase.",
+      "id": 11,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 10,
+        "x": 14,
+        "y": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "clamp_min(sum by (name, phase) (argocd_app_sync_total{name=~\"$app\"}) - sum by (name, phase) (argocd_app_sync_total{name=~\"$app\"} offset $__interval), 0) > 0",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{name}} ({{phase}})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "5m"
+    },
+    {
+      "type": "row",
+      "title": "Running versions",
+      "id": 12,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "panels": []
+    },
+    {
+      "type": "table",
+      "title": "Running images",
+      "description": "Image tag per container for every Deployment and StatefulSet. During a rollout a workload shows both the old and new tag; Pods is the number of containers running that image.",
+      "id": 13,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(label_replace(count by (namespace, workload, container, image_spec) (max by (namespace, pod, container, image_spec) (kube_pod_container_info{namespace=~\"$namespace\"}) * on (namespace, pod) group_left (replicaset) max by (namespace, pod, replicaset) (label_replace(kube_pod_owner{namespace=~\"$namespace\", owner_kind=\"ReplicaSet\"}, \"replicaset\", \"$1\", \"owner_name\", \"(.*)\")) * on (namespace, replicaset) group_left (workload) max by (namespace, replicaset, workload) (label_replace(kube_replicaset_owner{namespace=~\"$namespace\", owner_kind=\"Deployment\"}, \"workload\", \"$1\", \"owner_name\", \"(.*)\"))), \"kind\", \"Deployment\", \"__name__\", \"\"), \"tag\", \"$1\", \"image_spec\", \".*:([^:/]+)\") or label_replace(label_replace(count by (namespace, workload, container, image_spec) (max by (namespace, pod, container, image_spec) (kube_pod_container_info{namespace=~\"$namespace\"}) * on (namespace, pod) group_left (workload) max by (namespace, pod, workload) (label_replace(kube_pod_owner{namespace=~\"$namespace\", owner_kind=\"StatefulSet\"}, \"workload\", \"$1\", \"owner_name\", \"(.*)\"))), \"kind\", \"StatefulSet\", \"__name__\", \"\"), \"tag\", \"$1\", \"image_spec\", \".*:([^:/]+)\")",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "kind": 0,
+              "namespace": 1,
+              "workload": 2,
+              "container": 3,
+              "tag": 4,
+              "image_spec": 5,
+              "Value": 6
+            },
+            "renameByName": {
+              "kind": "Kind",
+              "namespace": "Namespace",
+              "workload": "Workload",
+              "container": "Container",
+              "tag": "Tag",
+              "image_spec": "Image",
+              "Value": "Pods"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Workload",
+            "desc": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "row",
+      "title": "Rollouts",
+      "id": 14,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "panels": []
+    },
+    {
+      "type": "table",
+      "title": "Deployments",
+      "description": "Replica state per Deployment. Last rollout is when its newest ReplicaSet was created.",
+      "id": 15,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 14,
+        "x": 0,
+        "y": 26
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, deployment) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"$namespace\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"$namespace\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, deployment) (kube_deployment_spec_replicas{namespace=~\"$namespace\"})",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, deployment) (kube_deployment_status_replicas_updated{namespace=~\"$namespace\"})",
+          "refId": "C",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, deployment) (kube_deployment_status_replicas_available{namespace=~\"$namespace\"})",
+          "refId": "D",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, deployment) (kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\"})",
+          "refId": "E",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "namespace": 0,
+              "deployment": 1,
+              "Value #A": 2,
+              "Value #B": 3,
+              "Value #C": 4,
+              "Value #D": 5,
+              "Value #E": 6
+            },
+            "renameByName": {
+              "namespace": "Namespace",
+              "deployment": "Deployment",
+              "Value #A": "Last rollout",
+              "Value #B": "Desired",
+              "Value #C": "Updated",
+              "Value #D": "Available",
+              "Value #E": "Unavailable"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last rollout"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unavailable"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Last rollout",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "table",
+      "title": "StatefulSets",
+      "description": "Replica state per StatefulSet. Updated below Desired means a rolling update is still in progress.",
+      "id": 16,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 10,
+        "x": 14,
+        "y": 26
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, statefulset) (kube_statefulset_replicas{namespace=~\"$namespace\"})",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, statefulset) (kube_statefulset_status_replicas_ready{namespace=~\"$namespace\"})",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, statefulset) (kube_statefulset_status_replicas_updated{namespace=~\"$namespace\"})",
+          "refId": "C",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "namespace": 0,
+              "statefulset": 1,
+              "Value #A": 2,
+              "Value #B": 3,
+              "Value #C": 4
+            },
+            "renameByName": {
+              "namespace": "Namespace",
+              "statefulset": "StatefulSet",
+              "Value #A": "Desired",
+              "Value #B": "Ready",
+              "Value #C": "Updated"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "StatefulSet",
+            "desc": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Rollout progress (updated / desired)",
+      "description": "Share of replicas running the current pod template. A dip below 100% is a rollout in progress.",
+      "id": 17,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, deployment) (kube_deployment_status_replicas_updated{namespace=~\"$namespace\"}) / (max by (namespace, deployment) (kube_deployment_spec_replicas{namespace=~\"$namespace\"}) > 0)",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{deployment}}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, statefulset) (kube_statefulset_status_replicas_updated{namespace=~\"$namespace\"}) / (max by (namespace, statefulset) (kube_statefulset_replicas{namespace=~\"$namespace\"}) > 0)",
+          "refId": "B",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{statefulset}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Unavailable replicas",
+      "description": "Replicas that are desired but not available. Short spikes during rollouts are expected; sustained values are not.",
+      "id": 18,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, deployment) (kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\"}) > 0",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{deployment}}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "(max by (namespace, statefulset) (kube_statefulset_replicas{namespace=~\"$namespace\"}) - max by (namespace, statefulset) (kube_statefulset_status_replicas_ready{namespace=~\"$namespace\"})) > 0",
+          "refId": "B",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{statefulset}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Restarts and failures",
+      "id": 19,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 43
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Container restarts",
+      "description": "Restarts per container and interval.",
+      "id": 20,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 44
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "clamp_min(max by (namespace, pod, container) (kube_pod_container_status_restarts_total{namespace=~\"$namespace\"}) - max by (namespace, pod, container) (kube_pod_container_status_restarts_total{namespace=~\"$namespace\"} offset $__interval), 0) > 0",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{pod}} / {{container}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "5m"
+    },
+    {
+      "type": "table",
+      "title": "Last container terminations",
+      "description": "Why each restarted container last stopped (OOMKilled, Error, ...), with exit code and total restarts of the current pod.",
+      "id": 21,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 44
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, pod, container, reason) (kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\"} == 1)",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, pod, container) (kube_pod_container_status_last_terminated_timestamp{namespace=~\"$namespace\"}) * 1000",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, pod, container) (kube_pod_container_status_last_terminated_exitcode{namespace=~\"$namespace\"})",
+          "refId": "C",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, pod, container) (kube_pod_container_status_restarts_total{namespace=~\"$namespace\"}) and on (namespace, pod, container) kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\"}",
+          "refId": "D",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true
+            },
+            "indexByName": {
+              "namespace": 0,
+              "pod": 1,
+              "container": 2,
+              "reason": 3,
+              "Value #C": 4,
+              "Value #B": 5,
+              "Value #D": 6
+            },
+            "renameByName": {
+              "namespace": "Namespace",
+              "pod": "Pod",
+              "container": "Container",
+              "reason": "Reason",
+              "Value #B": "Terminated",
+              "Value #C": "Exit code",
+              "Value #D": "Restarts"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "No restarted containers"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Terminated"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reason"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "OOMKilled": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Error": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Completed": {
+                        "color": "green",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Terminated",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "table",
+      "title": "Containers waiting now",
+      "description": "Containers that are not running right now and why (ContainerCreating, CrashLoopBackOff, ImagePullBackOff, ...).",
+      "id": 22,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~\"$namespace\"} == 1)",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "renameByName": {
+              "namespace": "Namespace",
+              "pod": "Pod",
+              "container": "Container",
+              "reason": "Reason"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "No containers waiting"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reason"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "CrashLoopBackOff": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "ImagePullBackOff": {
+                        "color": "red",
+                        "index": 1
+                      },
+                      "ErrImagePull": {
+                        "color": "red",
+                        "index": 2
+                      },
+                      "CreateContainerConfigError": {
+                        "color": "red",
+                        "index": 3
+                      },
+                      "ContainerCreating": {
+                        "color": "blue",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      }
+    }
+  ],
+  "version": 1,
+  "weekStart": ""
+}
