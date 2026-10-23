@@ -1268,6 +1268,73 @@
     },
     {
       "type": "timeseries",
+      "title": "Open WebSocket connections",
+      "description": "WebSocket connections open right now per app and channel, from the apps' only_chance_websocket_connections gauge. Traefik itself only reports sessions once they close. Shows 0 when no pod has an open connection: a pod only reports the gauge after its first WebSocket client.",
+      "id": 31,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 30
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (job, channel) (only_chance_websocket_connections) or on() label_replace(vector(0), \"channel\", \"none open\", \"\", \"\")",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{job}} {{channel}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
       "title": "WebSocket sessions closed per minute",
       "description": "WebSocket sessions per Traefik service, counted when they close. Traefik records a session as one request with status 0 that lasts as long as the connection.",
       "id": 29,
@@ -1277,8 +1344,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
+        "w": 8,
+        "x": 8,
         "y": 30
       },
       "targets": [
@@ -1343,8 +1410,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 16,
         "y": 30
       },
       "targets": [
