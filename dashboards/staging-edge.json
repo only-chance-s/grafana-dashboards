@@ -148,7 +148,7 @@
     {
       "type": "stat",
       "title": "Requests / s",
-      "description": "Requests through Traefik to the selected services.",
+      "description": "HTTP requests through Traefik to the selected services. WebSocket sessions are in the WebSocket row.",
       "id": 1,
       "datasource": {
         "type": "prometheus",
@@ -167,7 +167,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(traefik_service_requests_total{service=~\"$service\"}[5m]))",
+          "expr": "sum(rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\"}[5m]))",
           "refId": "A",
           "range": false,
           "instant": true
@@ -213,7 +213,7 @@
     {
       "type": "stat",
       "title": "5xx share",
-      "description": "Share of responses with a 5xx status over the last 5 minutes.",
+      "description": "Share of HTTP responses with a 5xx status over the last 5 minutes. WebSocket sessions are excluded.",
       "id": 2,
       "datasource": {
         "type": "prometheus",
@@ -232,7 +232,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(sum (rate(traefik_service_requests_total{service=~\"$service\", code=~\"5..\"}[5m])) / (sum (rate(traefik_service_requests_total{service=~\"$service\"}[5m])) > 0)) * 100 or vector(0)",
+          "expr": "(sum (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\", code=~\"5..\"}[5m])) / (sum (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\"}[5m])) > 0)) * 100 or vector(0)",
           "refId": "A",
           "range": false,
           "instant": true
@@ -740,7 +740,7 @@
     {
       "type": "timeseries",
       "title": "Requests per service",
-      "description": "Request rate per Traefik service.",
+      "description": "HTTP request rate per Traefik service. WebSocket sessions are in the WebSocket row.",
       "id": 10,
       "datasource": {
         "type": "prometheus",
@@ -759,7 +759,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "label_replace(sum by (service) (rate(traefik_service_requests_total{service=~\"$service\"}[$__rate_interval])), \"svc\", \"$1\", \"service\", \"(.+)@.*\")",
+          "expr": "label_replace(sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\"}[$__rate_interval])), \"svc\", \"$1\", \"service\", \"(.+)@.*\")",
           "refId": "A",
           "range": true,
           "instant": false,
@@ -806,7 +806,7 @@
     {
       "type": "timeseries",
       "title": "5xx share per service",
-      "description": "Share of 5xx responses per service.",
+      "description": "Share of 5xx HTTP responses per service. WebSocket sessions are excluded.",
       "id": 11,
       "datasource": {
         "type": "prometheus",
@@ -825,7 +825,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "label_replace((sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", code=~\"5..\"}[$__rate_interval])) / (sum by (service) (rate(traefik_service_requests_total{service=~\"$service\"}[$__rate_interval])) > 0)) * 100, \"svc\", \"$1\", \"service\", \"(.+)@.*\")",
+          "expr": "label_replace((sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\", code=~\"5..\"}[$__rate_interval])) / (sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\"}[$__rate_interval])) > 0)) * 100, \"svc\", \"$1\", \"service\", \"(.+)@.*\")",
           "refId": "A",
           "range": true,
           "instant": false,
@@ -980,7 +980,7 @@
     {
       "type": "timeseries",
       "title": "Responses by status class",
-      "description": "All responses split into 2xx, 3xx, 4xx and 5xx.",
+      "description": "HTTP responses split into 2xx, 3xx, 4xx and 5xx. WebSocket sessions (status 0) are excluded.",
       "id": 13,
       "datasource": {
         "type": "prometheus",
@@ -999,7 +999,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (class) (label_replace(rate(traefik_service_requests_total{service=~\"$service\"}[$__rate_interval]), \"class\", \"${1}xx\", \"code\", \"([0-9])..\"))",
+          "expr": "sum by (class) (label_replace(rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\"}[$__rate_interval]), \"class\", \"${1}xx\", \"code\", \"([0-9])..\"))",
           "refId": "A",
           "range": true,
           "instant": false,
@@ -1046,7 +1046,7 @@
     {
       "type": "table",
       "title": "Services in selected range",
-      "description": "Average request rate, 5xx share and share of requests slower than 300 ms per service over the selected range.",
+      "description": "Average HTTP request rate, 5xx share and share of HTTP requests slower than 300 ms per service over the selected range. WebSocket sessions are excluded.",
       "id": 14,
       "datasource": {
         "type": "prometheus",
@@ -1065,7 +1065,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (service) (rate(traefik_service_requests_total{service=~\"$service\"}[$__range]))",
+          "expr": "sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\"}[$__range]))",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -1077,7 +1077,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", code=~\"5..\"}[$__range])) / (sum by (service) (rate(traefik_service_requests_total{service=~\"$service\"}[$__range])) > 0)) * 100",
+          "expr": "(sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\", code=~\"5..\"}[$__range])) / (sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"http\"}[$__range])) > 0)) * 100",
           "refId": "B",
           "range": false,
           "instant": true,
@@ -1255,6 +1255,151 @@
     },
     {
       "type": "row",
+      "title": "WebSocket sessions (Traefik)",
+      "id": 28,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "WebSocket sessions closed per minute",
+      "description": "WebSocket sessions per Traefik service, counted when they close. Traefik records a session as one request with status 0 that lasts as long as the connection.",
+      "id": 29,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(sum by (service) (rate(traefik_service_requests_total{service=~\"$service\", protocol=\"websocket\"}[$__rate_interval])) * 60, \"svc\", \"$1\", \"service\", \"(.+)@.*\")",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{svc}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Average WebSocket session length",
+      "description": "Mean duration of WebSocket sessions that closed, per service. Traefik's duration buckets stop at 5 s, so percentiles are not meaningful for sessions; this uses sum / count.",
+      "id": 30,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(sum by (service) (rate(traefik_service_request_duration_seconds_sum{service=~\"$service\", protocol=\"websocket\"}[$__rate_interval])) / (sum by (service) (rate(traefik_service_request_duration_seconds_count{service=~\"$service\", protocol=\"websocket\"}[$__rate_interval])) > 0), \"svc\", \"$1\", \"service\", \"(.+)@.*\")",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{svc}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
       "title": "TLS certificates",
       "id": 15,
       "collapsed": false,
@@ -1262,7 +1407,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 38
       },
       "panels": []
     },
@@ -1279,7 +1424,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 39
       },
       "targets": [
         {
@@ -1448,7 +1593,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 47
       },
       "panels": []
     },
@@ -1465,7 +1610,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 39
+        "y": 48
       },
       "targets": [
         {
@@ -1531,7 +1676,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 39
+        "y": 48
       },
       "targets": [
         {
@@ -1597,7 +1742,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 39
+        "y": 48
       },
       "targets": [
         {
@@ -1687,7 +1832,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 47
+        "y": 56
       },
       "targets": [
         {
@@ -1765,7 +1910,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 47
+        "y": 56
       },
       "targets": [
         {
@@ -1827,7 +1972,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 64
       },
       "panels": []
     },
@@ -1844,7 +1989,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 56
+        "y": 65
       },
       "targets": [
         {
@@ -1910,7 +2055,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 56
+        "y": 65
       },
       "targets": [
         {
@@ -2007,7 +2152,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 56
+        "y": 65
       },
       "targets": [
         {
@@ -2095,7 +2240,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 73
       },
       "targets": [
         {
