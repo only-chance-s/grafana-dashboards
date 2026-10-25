@@ -1,9 +1,8 @@
 {
   "uid": "staging-edge",
-  "title": "Staging edge and dependencies",
-  "description": "How requests reach staging and what the backend depends on: Traefik traffic, errors and latency, TLS certificates, Keycloak, and backend calls to Postgres, Redis and external providers.",
+  "title": "Edge and dependencies",
+  "description": "How requests reach the selected environment and what the backend depends on: Traefik traffic, errors and latency, TLS certificates, Keycloak, and backend calls to Postgres, Redis and external providers.",
   "tags": [
-    "staging",
     "traefik",
     "keycloak",
     "dependencies"
@@ -21,36 +20,36 @@
   "liveNow": false,
   "links": [
     {
-      "title": "Staging deployments",
+      "title": "Deployments",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/staging-deployments",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
       "tags": []
     },
     {
-      "title": "Staging data layer",
+      "title": "Data layer",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/staging-data-layer",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
       "tags": []
     },
     {
-      "title": "Staging app monitoring",
+      "title": "App monitoring",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/b773ce4c-fe18-4fb6-a38d-01a5e4a219b1",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
@@ -80,7 +79,7 @@
         "hide": false,
         "iconColor": "orange",
         "name": "Deployment rollouts",
-        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"staging-ns|keycloak-ns\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"staging-ns|keycloak-ns\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
+        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"${env}-ns|keycloak-ns\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"${env}-ns|keycloak-ns\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
         "step": "1m",
         "titleFormat": "Rollout",
         "textFormat": "{{deployment}} → {{replicaset}}",
@@ -91,6 +90,29 @@
   },
   "templating": {
     "list": [
+      {
+        "name": "env",
+        "label": "Environment",
+        "type": "custom",
+        "description": "Deployment environment. Workload selectors are built from it as <env>-ns, <env>-api and so on, matching baseConfig.environment in only-chance-devops. Add prod here when it exists.",
+        "query": "staging",
+        "current": {
+          "selected": true,
+          "text": "staging",
+          "value": "staging"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "staging",
+            "value": "staging"
+          }
+        ],
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "skipUrlSync": false
+      },
       {
         "name": "datasource",
         "label": "Datasource",

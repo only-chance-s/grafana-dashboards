@@ -467,6 +467,29 @@
   "templating": {
     "list": [
       {
+        "name": "env",
+        "label": "Environment",
+        "type": "custom",
+        "description": "Deployment environment. Workload selectors are built from it as <env>-ns, <env>-api and so on, matching baseConfig.environment in only-chance-devops. Add prod here when it exists.",
+        "query": "staging",
+        "current": {
+          "selected": true,
+          "text": "staging",
+          "value": "staging"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "staging",
+            "value": "staging"
+          }
+        ],
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "skipUrlSync": false
+      },
+      {
         "current": {
           "selected": false,
           "text": "Tempo",

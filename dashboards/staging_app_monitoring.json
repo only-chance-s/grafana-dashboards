@@ -1,9 +1,8 @@
 {
   "uid": "b773ce4c-fe18-4fb6-a38d-01a5e4a219b1",
-  "title": "Staging app monitoring",
-  "description": "RED metrics, dependencies, pods and logs for the staging API and race API. Panels use Prometheus metrics; Loki is only queried from the collapsed Logs row.",
+  "title": "App monitoring",
+  "description": "RED metrics, dependencies, pods and logs for the API and race API of the selected environment. Panels use Prometheus metrics; Loki is only queried from the collapsed Logs row.",
   "tags": [
-    "staging",
     "api",
     "only-chance"
   ],
@@ -24,25 +23,29 @@
       "title": "Edge and dependencies",
       "type": "link",
       "url": "/d/staging-edge",
-      "keepTime": true
+      "keepTime": true,
+      "includeVars": true
     },
     {
       "title": "Data layer",
       "type": "link",
       "url": "/d/staging-data-layer",
-      "keepTime": true
+      "keepTime": true,
+      "includeVars": true
     },
     {
       "title": "Jobs and backups",
       "type": "link",
       "url": "/d/staging-jobs",
-      "keepTime": true
+      "keepTime": true,
+      "includeVars": true
     },
     {
       "title": "Deployments",
       "type": "link",
       "url": "/d/staging-deployments",
-      "keepTime": true
+      "keepTime": true,
+      "includeVars": true
     }
   ],
   "annotations": {
@@ -63,6 +66,29 @@
   },
   "templating": {
     "list": [
+      {
+        "name": "env",
+        "label": "Environment",
+        "type": "custom",
+        "description": "Deployment environment. Workload selectors are built from it as <env>-ns, <env>-api and so on, matching baseConfig.environment in only-chance-devops. Add prod here when it exists.",
+        "query": "staging",
+        "current": {
+          "selected": true,
+          "text": "staging",
+          "value": "staging"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "staging",
+            "value": "staging"
+          }
+        ],
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "skipUrlSync": false
+      },
       {
         "name": "datasource",
         "label": "Prometheus",
@@ -97,21 +123,21 @@
         "name": "app",
         "label": "App",
         "type": "custom",
-        "query": "staging-api : only-chance-api, staging-race-api : only-chance-race",
+        "query": "api : only-chance-api, race-api : only-chance-race",
         "current": {
           "selected": true,
-          "text": "staging-api",
+          "text": "api",
           "value": "only-chance-api"
         },
         "options": [
           {
             "selected": true,
-            "text": "staging-api",
+            "text": "api",
             "value": "only-chance-api"
           },
           {
             "selected": false,
-            "text": "staging-race-api",
+            "text": "race-api",
             "value": "only-chance-race"
           }
         ],
@@ -622,7 +648,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(kube_deployment_status_replicas_available{namespace=\"staging-ns\", deployment=\"${app:text}\"}) / sum(kube_deployment_spec_replicas{namespace=\"staging-ns\", deployment=\"${app:text}\"}) * 100",
+          "expr": "sum(kube_deployment_status_replicas_available{namespace=\"${env}-ns\", deployment=\"${env}-${app:text}\"}) / sum(kube_deployment_spec_replicas{namespace=\"${env}-ns\", deployment=\"${env}-${app:text}\"}) * 100",
           "refId": "A",
           "legendFormat": "",
           "editorMode": "code",
@@ -688,7 +714,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "round(sum(increase(kube_pod_container_status_restarts_total{namespace=\"staging-ns\", container=\"${app:text}\"}[$__range])))",
+          "expr": "round(sum(increase(kube_pod_container_status_restarts_total{namespace=\"${env}-ns\", container=\"${env}-${app:text}\"}[$__range])))",
           "refId": "A",
           "legendFormat": "",
           "editorMode": "code",
@@ -1536,7 +1562,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) * 60",
+          "expr": "sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${env}-${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) * 60",
           "refId": "A",
           "legendFormat": "{{span_name}}",
           "editorMode": "code",
@@ -1602,7 +1628,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (span_name) (rate(traces_spanmetrics_latency_sum{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) / (sum by (span_name) (rate(traces_spanmetrics_latency_count{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) > 0)",
+          "expr": "sum by (span_name) (rate(traces_spanmetrics_latency_sum{service=\"${env}-${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) / (sum by (span_name) (rate(traces_spanmetrics_latency_count{service=\"${env}-${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) > 0)",
           "refId": "A",
           "legendFormat": "{{span_name}}",
           "editorMode": "code",
@@ -1668,7 +1694,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\"}[$__rate_interval])) or sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) * 0) / (sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) > 0) * 100",
+          "expr": "(sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${env}-${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\", status_code=\"STATUS_CODE_ERROR\"}[$__rate_interval])) or sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${env}-${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) * 0) / (sum by (span_name) (rate(traces_spanmetrics_calls_total{service=\"${env}-${app:text}\", traffic_class=\"realtime\", span_kind=\"SPAN_KIND_SERVER\"}[$__rate_interval])) > 0) * 100",
           "refId": "A",
           "legendFormat": "{{span_name}}",
           "editorMode": "code",
@@ -2025,7 +2051,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"staging-ns\", container=\"${app:text}\"}[$__rate_interval]))",
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"${env}-ns\", container=\"${env}-${app:text}\"}[$__rate_interval]))",
           "refId": "A",
           "legendFormat": "{{pod}}",
           "editorMode": "code",
@@ -2037,7 +2063,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "max(kube_pod_container_resource_limits{namespace=\"staging-ns\", container=\"${app:text}\", resource=\"cpu\"})",
+          "expr": "max(kube_pod_container_resource_limits{namespace=\"${env}-ns\", container=\"${env}-${app:text}\", resource=\"cpu\"})",
           "refId": "B",
           "legendFormat": "limit",
           "editorMode": "code",
@@ -2130,7 +2156,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"staging-ns\", container=\"${app:text}\"})",
+          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"${env}-ns\", container=\"${env}-${app:text}\"})",
           "refId": "A",
           "legendFormat": "{{pod}}",
           "editorMode": "code",
@@ -2142,7 +2168,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "max(kube_pod_container_resource_limits{namespace=\"staging-ns\", container=\"${app:text}\", resource=\"memory\"})",
+          "expr": "max(kube_pod_container_resource_limits{namespace=\"${env}-ns\", container=\"${env}-${app:text}\", resource=\"memory\"})",
           "refId": "B",
           "legendFormat": "limit",
           "editorMode": "code",
@@ -2210,7 +2236,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (pod) (rate(container_cpu_cfs_throttled_periods_total{namespace=\"staging-ns\", container=\"${app:text}\"}[$__rate_interval])) / sum by (pod) (rate(container_cpu_cfs_periods_total{namespace=\"staging-ns\", container=\"${app:text}\"}[$__rate_interval])) * 100",
+          "expr": "sum by (pod) (rate(container_cpu_cfs_throttled_periods_total{namespace=\"${env}-ns\", container=\"${env}-${app:text}\"}[$__rate_interval])) / sum by (pod) (rate(container_cpu_cfs_periods_total{namespace=\"${env}-ns\", container=\"${env}-${app:text}\"}[$__rate_interval])) * 100",
           "refId": "A",
           "legendFormat": "{{pod}}",
           "editorMode": "code",
@@ -2320,7 +2346,7 @@
                 "type": "loki",
                 "uid": "${loki}"
               },
-              "expr": "sum(count_over_time({job=\"staging-ns/${app:text}\"} |= `\"level\": \"ERROR\"` [$__auto]))",
+              "expr": "sum(count_over_time({job=\"${env}-ns/${env}-${app:text}\"} |= `\"level\": \"ERROR\"` [$__auto]))",
               "refId": "A",
               "legendFormat": "ERROR",
               "editorMode": "code",
@@ -2333,7 +2359,7 @@
                 "type": "loki",
                 "uid": "${loki}"
               },
-              "expr": "sum(count_over_time({job=\"staging-ns/${app:text}\"} |= `\"level\": \"WARNING\"` [$__auto]))",
+              "expr": "sum(count_over_time({job=\"${env}-ns/${env}-${app:text}\"} |= `\"level\": \"WARNING\"` [$__auto]))",
               "refId": "B",
               "legendFormat": "WARNING",
               "editorMode": "code",
@@ -2372,7 +2398,7 @@
                 "type": "loki",
                 "uid": "${loki}"
               },
-              "expr": "{job=\"staging-ns/${app:text}\"} |= `\"level\": \"ERROR\"`",
+              "expr": "{job=\"${env}-ns/${env}-${app:text}\"} |= `\"level\": \"ERROR\"`",
               "refId": "A",
               "legendFormat": "",
               "editorMode": "code",

@@ -1,9 +1,8 @@
 {
   "uid": "staging-jobs",
-  "title": "Staging jobs and backups",
-  "description": "Every CronJob on the staging cluster: freshness against its schedule, failures, run times and running Jobs, with payment jobs (dispatchers, reconciliation, financial backlogs) and backups called out.",
+  "title": "Jobs and backups",
+  "description": "Every CronJob in the cluster: freshness against its schedule, failures, run times and running Jobs, with payment jobs (dispatchers, reconciliation, financial backlogs) and backups called out.",
   "tags": [
-    "staging",
     "cronjobs",
     "payments",
     "backups"
@@ -21,36 +20,36 @@
   "liveNow": false,
   "links": [
     {
-      "title": "Staging deployments",
+      "title": "Deployments",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/staging-deployments",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
       "tags": []
     },
     {
-      "title": "Staging data layer",
+      "title": "Data layer",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/staging-data-layer",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
       "tags": []
     },
     {
-      "title": "Staging edge and dependencies",
+      "title": "Edge and dependencies",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/staging-edge",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
@@ -80,7 +79,7 @@
         "hide": false,
         "iconColor": "orange",
         "name": "Deployment rollouts",
-        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"staging-ns\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"staging-ns\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
+        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"${env}-ns\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"${env}-ns\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
         "step": "1m",
         "titleFormat": "Rollout",
         "textFormat": "{{deployment}} → {{replicaset}}",
@@ -91,6 +90,29 @@
   },
   "templating": {
     "list": [
+      {
+        "name": "env",
+        "label": "Environment",
+        "type": "custom",
+        "description": "Deployment environment. Workload selectors are built from it as <env>-ns, <env>-api and so on, matching baseConfig.environment in only-chance-devops. Add prod here when it exists.",
+        "query": "staging",
+        "current": {
+          "selected": true,
+          "text": "staging",
+          "value": "staging"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "staging",
+            "value": "staging"
+          }
+        ],
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "skipUrlSync": false
+      },
       {
         "name": "datasource",
         "label": "Datasource",
@@ -435,7 +457,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max((time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)\"}))))",
+          "expr": "max((time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\"${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\"${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)\"}))))",
           "refId": "A",
           "range": false,
           "instant": true
@@ -732,7 +754,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(max by (namespace, cronjob, schedule) (kube_cronjob_info{namespace=~\"$namespace\"}), \"group\", \"Platform\", \"cronjob\", \".*\"), \"group\", \"Integrations\", \"cronjob\", \"staging-crm-.*|staging-api-(analytics-.*|product-analytics-.*)\"), \"group\", \"Bookings & race\", \"cronjob\", \"staging-api-(reservation-expiry|race-reconciliation)|staging-race-.*\"), \"group\", \"Payments\", \"cronjob\", \"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"), \"group\", \"Backups\", \"cronjob\", \".*backup.*\")",
+          "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(max by (namespace, cronjob, schedule) (kube_cronjob_info{namespace=~\"$namespace\"}), \"group\", \"Platform\", \"cronjob\", \".*\"), \"group\", \"Integrations\", \"cronjob\", \"${env}-crm-.*|${env}-api-(analytics-.*|product-analytics-.*)\"), \"group\", \"Bookings & race\", \"cronjob\", \"${env}-api-(reservation-expiry|race-reconciliation)|${env}-race-.*\"), \"group\", \"Payments\", \"cronjob\", \"${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"), \"group\", \"Backups\", \"cronjob\", \".*backup.*\")",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -1194,7 +1216,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"})))",
+          "expr": "(time() - (max by (namespace, cronjob) (kube_cronjob_status_last_successful_time{namespace=~\"$namespace\", cronjob=~\"${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"}) or max by (namespace, cronjob) (kube_cronjob_created{namespace=~\"$namespace\", cronjob=~\"${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"})))",
           "refId": "A",
           "range": true,
           "instant": false,
@@ -1408,7 +1430,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max by (cronjob) ((((label_replace((max by (namespace, job_name) (kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|staging-api-(reservation-expiry|race-reconciliation))-[0-9]{8,}\"}) - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|staging-api-(reservation-expiry|race-reconciliation))-[0-9]{8,}\"})), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or ((max by (namespace, job_name) (kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}) - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"})) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}, \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|staging-api-(reservation-expiry|race-reconciliation)\"})))",
+          "expr": "max by (cronjob) ((((label_replace((max by (namespace, job_name) (kube_job_status_completion_time{namespace=~\"$namespace\", job_name=~\"(${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|${env}-api-(reservation-expiry|race-reconciliation))-[0-9]{8,}\"}) - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name=~\"(${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|${env}-api-(reservation-expiry|race-reconciliation))-[0-9]{8,}\"})), \"cronjob\", \"$1\", \"job_name\", \"(.+)-[0-9]{8,}\")) or ((max by (namespace, job_name) (kube_job_status_completion_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"}) - max by (namespace, job_name) (kube_job_status_start_time{namespace=~\"$namespace\", job_name!~\"(.+)-[0-9]{8,}\"})) * on (namespace, job_name) group_left (cronjob) max by (namespace, job_name, cronjob) (label_replace(kube_job_owner{namespace=~\"$namespace\", owner_kind=\"CronJob\", job_name!~\"(.+)-[0-9]{8,}\"}, \"cronjob\", \"$1\", \"owner_name\", \"(.*)\")))) and on (namespace, cronjob) max by (namespace, cronjob) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\"${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch)|${env}-api-(reservation-expiry|race-reconciliation)\"})))",
           "refId": "A",
           "range": true,
           "instant": false,
@@ -1507,7 +1529,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(max by (namespace, cronjob, schedule) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}), \"group\", \"Platform\", \"cronjob\", \".*\"), \"group\", \"Integrations\", \"cronjob\", \"staging-crm-.*|staging-api-(analytics-.*|product-analytics-.*)\"), \"group\", \"Bookings & race\", \"cronjob\", \"staging-api-(reservation-expiry|race-reconciliation)|staging-race-.*\"), \"group\", \"Payments\", \"cronjob\", \"staging-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"), \"group\", \"Backups\", \"cronjob\", \".*backup.*\")",
+          "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(max by (namespace, cronjob, schedule) (kube_cronjob_info{namespace=~\"$namespace\", cronjob=~\".*backup.*\"}), \"group\", \"Platform\", \"cronjob\", \".*\"), \"group\", \"Integrations\", \"cronjob\", \"${env}-crm-.*|${env}-api-(analytics-.*|product-analytics-.*)\"), \"group\", \"Bookings & race\", \"cronjob\", \"${env}-api-(reservation-expiry|race-reconciliation)|${env}-race-.*\"), \"group\", \"Payments\", \"cronjob\", \"${env}-api-(refund-dispatch|invoicing-dispatch|stripe-webhook-dispatch|stripe-reconciliation|financial-health)\"), \"group\", \"Backups\", \"cronjob\", \".*backup.*\")",
           "refId": "A",
           "range": false,
           "instant": true,
