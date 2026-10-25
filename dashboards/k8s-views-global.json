@@ -178,7 +178,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_requests{resource=\"cpu\", cluster=\"$cluster\"}) / sum(machine_cpu_cores{cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_requests{resource=\"cpu\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1)) / sum(machine_cpu_cores{cluster=\"$cluster\"})",
           "hide": false,
           "legendFormat": "Requests",
           "range": true,
@@ -190,7 +190,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_limits{resource=\"cpu\", cluster=\"$cluster\"}) / sum(machine_cpu_cores{cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_limits{resource=\"cpu\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1)) / sum(machine_cpu_cores{cluster=\"$cluster\"})",
           "hide": false,
           "legendFormat": "Limits",
           "range": true,
@@ -327,7 +327,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_requests{resource=\"memory\", cluster=\"$cluster\"}) / sum(machine_memory_bytes{cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_requests{resource=\"memory\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1)) / sum(machine_memory_bytes{cluster=\"$cluster\"})",
           "hide": false,
           "legendFormat": "Requests",
           "range": true,
@@ -339,7 +339,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_limits{resource=\"memory\", cluster=\"$cluster\"}) / sum(machine_memory_bytes{cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_limits{resource=\"memory\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1)) / sum(machine_memory_bytes{cluster=\"$cluster\"})",
           "hide": false,
           "legendFormat": "Limits",
           "range": true,
@@ -839,7 +839,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_requests{resource=\"cpu\", cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_requests{resource=\"cpu\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1))",
           "hide": false,
           "legendFormat": "Requests",
           "range": true,
@@ -851,7 +851,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_limits{resource=\"cpu\", cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_limits{resource=\"cpu\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1))",
           "hide": false,
           "legendFormat": "Limits",
           "range": true,
@@ -995,7 +995,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_requests{resource=\"memory\", cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_requests{resource=\"memory\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1))",
           "hide": false,
           "legendFormat": "Requests",
           "range": true,
@@ -1007,7 +1007,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_limits{resource=\"memory\", cluster=\"$cluster\"})",
+          "expr": "sum(kube_pod_container_resource_limits{resource=\"memory\", cluster=\"$cluster\"} * on (namespace, pod) group_left() max by (namespace, pod) (kube_pod_status_phase{phase=~\"Pending|Running\", cluster=\"$cluster\"} == 1))",
           "hide": false,
           "legendFormat": "Limits",
           "range": true,
