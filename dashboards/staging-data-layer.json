@@ -1,9 +1,8 @@
 {
   "uid": "staging-data-layer",
-  "title": "Staging data layer",
-  "description": "Connection pooling and caching for staging: PgBouncer pools, Redis memory, clients and Pub/Sub, and the backend's SQLAlchemy pools.",
+  "title": "Data layer",
+  "description": "Connection pooling and caching for the selected environment: PgBouncer pools, Redis memory, clients and Pub/Sub, and the backend's SQLAlchemy pools.",
   "tags": [
-    "staging",
     "pgbouncer",
     "redis",
     "database"
@@ -26,31 +25,31 @@
       "icon": "dashboard",
       "url": "/d/000000039",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
       "tags": []
     },
     {
-      "title": "Staging deployments",
+      "title": "Deployments",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/staging-deployments",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
       "tags": []
     },
     {
-      "title": "Staging edge and dependencies",
+      "title": "Edge and dependencies",
       "type": "link",
       "icon": "dashboard",
       "url": "/d/staging-edge",
       "keepTime": true,
-      "includeVars": false,
+      "includeVars": true,
       "targetBlank": false,
       "tooltip": "",
       "asDropdown": false,
@@ -80,7 +79,7 @@
         "hide": false,
         "iconColor": "orange",
         "name": "Deployment rollouts",
-        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"staging-ns|keycloak-ns\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"staging-ns|keycloak-ns\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
+        "expr": "max by (namespace, deployment, replicaset) (max by (namespace, replicaset) (kube_replicaset_created{namespace=~\"${env}-ns|keycloak-ns\"}) * on (namespace, replicaset) group_left (deployment) max by (namespace, replicaset, deployment) (label_replace(kube_replicaset_owner{namespace=~\"${env}-ns|keycloak-ns\", owner_kind=\"Deployment\"}, \"deployment\", \"$1\", \"owner_name\", \"(.*)\"))) * 1000",
         "step": "1m",
         "titleFormat": "Rollout",
         "textFormat": "{{deployment}} → {{replicaset}}",
@@ -91,6 +90,29 @@
   },
   "templating": {
     "list": [
+      {
+        "name": "env",
+        "label": "Environment",
+        "type": "custom",
+        "description": "Deployment environment. Workload selectors are built from it as <env>-ns, <env>-api and so on, matching baseConfig.environment in only-chance-devops. Add prod here when it exists.",
+        "query": "staging",
+        "current": {
+          "selected": true,
+          "text": "staging",
+          "value": "staging"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "staging",
+            "value": "staging"
+          }
+        ],
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "skipUrlSync": false
+      },
       {
         "name": "datasource",
         "label": "Datasource",
@@ -115,7 +137,7 @@
     {
       "type": "stat",
       "title": "PgBouncer down",
-      "description": "PgBouncer instances (staging HA pods and Keycloak's) that report down, or whose exporter cannot be scraped.",
+      "description": "PgBouncer instances (the environment's HA pods and Keycloak's) that report down, or whose exporter cannot be scraped.",
       "id": 1,
       "datasource": {
         "type": "prometheus",
