@@ -547,7 +547,7 @@
     },
     {
       "type": "stat",
-      "title": "Open disputes",
+      "title": "Disputes",
       "description": "Disputes Stripe has not closed yet, regardless of the time range.",
       "datasource": {
         "type": "grafana-postgresql-datasource",
@@ -563,7 +563,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT count(*) AS \"Open disputes\"\nFROM stripe_disputes WHERE provider_status NOT IN ('won', 'lost', 'warning_closed', 'prevented')"
+          "rawSql": "SELECT count(*) AS \"Disputes\"\nFROM stripe_disputes WHERE provider_status NOT IN ('won', 'lost', 'warning_closed', 'prevented')"
         }
       ],
       "fieldConfig": {
