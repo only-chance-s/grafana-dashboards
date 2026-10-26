@@ -210,7 +210,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 3,
         "x": 0,
         "y": 1
       },
@@ -218,7 +218,7 @@
     },
     {
       "type": "stat",
-      "title": "Successful payments",
+      "title": "Paid",
       "description": "Payments that reached succeeded, including ones refunded afterwards.",
       "datasource": {
         "type": "grafana-postgresql-datasource",
@@ -234,7 +234,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT count(*) AS \"Successful payments\"\nFROM payments WHERE status IN ('succeeded', 'refunded') AND $__timeFilter(created_at)"
+          "rawSql": "SELECT count(*) AS \"Paid\"\nFROM payments WHERE status IN ('succeeded', 'refunded') AND $__timeFilter(created_at)"
         }
       ],
       "fieldConfig": {
@@ -275,7 +275,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 4,
+        "x": 3,
         "y": 1
       },
       "id": 3
@@ -348,7 +348,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 7,
+        "x": 6,
         "y": 1
       },
       "id": 4
@@ -412,7 +412,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 10,
+        "x": 9,
         "y": 1
       },
       "id": 5
@@ -476,7 +476,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 13,
+        "x": 12,
         "y": 1
       },
       "id": 6
@@ -540,7 +540,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 16,
+        "x": 15,
         "y": 1
       },
       "id": 7
@@ -607,15 +607,15 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 2,
-        "x": 19,
+        "w": 3,
+        "x": 18,
         "y": 1
       },
       "id": 8
     },
     {
       "type": "stat",
-      "title": "Financial backlog",
+      "title": "Backlog",
       "description": "Rows needing operator attention across reconciliation, fiscal review, refund recovery and disputes (financial-health collector).",
       "datasource": {
         "type": "prometheus",
@@ -2011,7 +2011,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT reconciliation_date AS \"Date\", status AS \"Status\", discrepancy_count AS \"Discrepancies\",\n       completed_at AS \"Completed\"\nFROM stripe_reconciliation_runs ORDER BY reconciliation_date DESC LIMIT 10"
+          "rawSql": "SELECT to_char(reconciliation_date, 'YYYY-MM-DD') AS \"Date\", status AS \"Status\", discrepancy_count AS \"Discrepancies\",\n       completed_at AS \"Completed\"\nFROM stripe_reconciliation_runs ORDER BY reconciliation_date DESC LIMIT 10"
         }
       ],
       "fieldConfig": {
@@ -2239,7 +2239,7 @@
     },
     {
       "type": "stat",
-      "title": "Health collector last ran",
+      "title": "Collector last ran",
       "description": "Seconds since the financial-health collector last pushed. Backlog panels are stale if this grows.",
       "datasource": {
         "type": "prometheus",
