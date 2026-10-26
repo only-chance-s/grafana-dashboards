@@ -1066,7 +1066,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Shared buffers"
+              "options": "Shared buf."
             },
             "properties": [
               {
@@ -1078,7 +1078,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Effective cache"
+              "options": "Eff. cache"
             },
             "properties": [
               {
@@ -1090,7 +1090,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Maintenance mem"
+              "options": "Maint. mem"
             },
             "properties": [
               {
@@ -1126,7 +1126,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Random page cost"
+              "options": "Random cost"
             },
             "properties": [
               {
@@ -1138,7 +1138,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Seq page cost"
+              "options": "Seq cost"
             },
             "properties": [
               {
@@ -1150,7 +1150,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Worker processes"
+              "options": "Workers"
             },
             "properties": [
               {
@@ -1162,7 +1162,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Parallel workers"
+              "options": "Parallel"
             },
             "properties": [
               {
@@ -1306,15 +1306,15 @@
             },
             "renameByName": {
               "server": "Server",
-              "Value #A": "Shared buffers",
-              "Value #B": "Effective cache",
-              "Value #C": "Maintenance mem",
+              "Value #A": "Shared buf.",
+              "Value #B": "Eff. cache",
+              "Value #C": "Maint. mem",
               "Value #D": "Work mem",
               "Value #E": "Max WAL",
-              "Value #F": "Random page cost",
-              "Value #G": "Seq page cost",
-              "Value #H": "Worker processes",
-              "Value #I": "Parallel workers"
+              "Value #F": "Random cost",
+              "Value #G": "Seq cost",
+              "Value #H": "Workers",
+              "Value #I": "Parallel"
             },
             "indexByName": {
               "server": 0,
