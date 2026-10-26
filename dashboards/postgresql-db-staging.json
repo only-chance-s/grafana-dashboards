@@ -57,7 +57,8 @@
             "align": "auto",
             "cellOptions": {
               "type": "auto"
-            }
+            },
+            "minWidth": 70
           }
         },
         "overrides": [
@@ -593,7 +594,7 @@
         "x": 0,
         "y": 25,
         "w": 12,
-        "h": 8
+        "h": 10
       },
       "fieldConfig": {
         "defaults": {
@@ -663,7 +664,7 @@
         "x": 12,
         "y": 25,
         "w": 12,
-        "h": 8
+        "h": 10
       },
       "fieldConfig": {
         "defaults": {
@@ -741,7 +742,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 33,
+        "y": 35,
         "w": 8,
         "h": 9
       },
@@ -800,7 +801,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 33,
+        "y": 35,
         "w": 8,
         "h": 9
       },
@@ -860,7 +861,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 33,
+        "y": 35,
         "w": 8,
         "h": 9
       },
@@ -918,7 +919,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 42,
+        "y": 44,
         "w": 12,
         "h": 8
       },
@@ -977,7 +978,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 42,
+        "y": 44,
         "w": 12,
         "h": 8
       },
@@ -1031,7 +1032,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 50,
+        "y": 52,
         "w": 24,
         "h": 1
       },
@@ -1047,7 +1048,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 51,
+        "y": 53,
         "w": 24,
         "h": 7
       },
@@ -1057,14 +1058,15 @@
             "align": "auto",
             "cellOptions": {
               "type": "auto"
-            }
+            },
+            "minWidth": 70
           }
         },
         "overrides": [
           {
             "matcher": {
               "id": "byName",
-              "options": "Shared buffers"
+              "options": "Shared buf."
             },
             "properties": [
               {
@@ -1076,7 +1078,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Effective cache"
+              "options": "Eff. cache"
             },
             "properties": [
               {
@@ -1088,7 +1090,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Maintenance mem"
+              "options": "Maint. mem"
             },
             "properties": [
               {
@@ -1124,7 +1126,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Random page cost"
+              "options": "Random cost"
             },
             "properties": [
               {
@@ -1136,7 +1138,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Seq page cost"
+              "options": "Seq cost"
             },
             "properties": [
               {
@@ -1148,7 +1150,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Worker processes"
+              "options": "Workers"
             },
             "properties": [
               {
@@ -1160,7 +1162,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Parallel workers"
+              "options": "Parallel"
             },
             "properties": [
               {
@@ -1304,15 +1306,15 @@
             },
             "renameByName": {
               "server": "Server",
-              "Value #A": "Shared buffers",
-              "Value #B": "Effective cache",
-              "Value #C": "Maintenance mem",
+              "Value #A": "Shared buf.",
+              "Value #B": "Eff. cache",
+              "Value #C": "Maint. mem",
               "Value #D": "Work mem",
               "Value #E": "Max WAL",
-              "Value #F": "Random page cost",
-              "Value #G": "Seq page cost",
-              "Value #H": "Worker processes",
-              "Value #I": "Parallel workers"
+              "Value #F": "Random cost",
+              "Value #G": "Seq cost",
+              "Value #H": "Workers",
+              "Value #I": "Parallel"
             },
             "indexByName": {
               "server": 0,
@@ -1337,7 +1339,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 58,
+        "y": 60,
         "w": 24,
         "h": 1
       },
@@ -1353,7 +1355,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 59,
+        "y": 61,
         "w": 12,
         "h": 8
       },
@@ -1422,7 +1424,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 59,
+        "y": 61,
         "w": 12,
         "h": 8
       },
@@ -1489,7 +1491,7 @@
       "collapsed": true,
       "gridPos": {
         "x": 0,
-        "y": 67,
+        "y": 69,
         "w": 24,
         "h": 1
       },
@@ -1504,7 +1506,7 @@
           },
           "gridPos": {
             "x": 0,
-            "y": 68,
+            "y": 70,
             "w": 8,
             "h": 7
           },
@@ -1563,7 +1565,7 @@
           },
           "gridPos": {
             "x": 8,
-            "y": 68,
+            "y": 70,
             "w": 8,
             "h": 7
           },
@@ -1622,7 +1624,7 @@
           },
           "gridPos": {
             "x": 16,
-            "y": 68,
+            "y": 70,
             "w": 8,
             "h": 7
           },
