@@ -141,6 +141,52 @@
   "panels": [
     {
       "type": "row",
+      "id": 39,
+      "title": "Alerts",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "type": "alertlist",
+      "id": 40,
+      "title": "Payment alerts",
+      "description": "Every Grafana alert rule labelled service=payments, firing ones first. Click a rule to open it; rules bound to a panel on this dashboard also mark that panel.",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "options": {
+        "viewMode": "list",
+        "groupMode": "default",
+        "groupBy": [],
+        "maxItems": 30,
+        "sortOrder": 3,
+        "dashboardAlerts": false,
+        "alertName": "",
+        "alertInstanceLabelFilter": "{service=\"payments\"}",
+        "datasource": "grafana",
+        "folder": null,
+        "showInstances": false,
+        "stateFilter": {
+          "firing": true,
+          "pending": true,
+          "noData": true,
+          "normal": true,
+          "error": true,
+          "recovering": true
+        }
+      }
+    },
+    {
+      "type": "row",
       "id": 1,
       "title": "Overview (selected time range)",
       "collapsed": false,
@@ -148,7 +194,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 9
       },
       "panels": []
     },
@@ -212,7 +258,7 @@
         "h": 4,
         "w": 3,
         "x": 0,
-        "y": 1
+        "y": 10
       },
       "id": 2
     },
@@ -276,7 +322,7 @@
         "h": 4,
         "w": 3,
         "x": 3,
-        "y": 1
+        "y": 10
       },
       "id": 3
     },
@@ -349,7 +395,7 @@
         "h": 4,
         "w": 3,
         "x": 6,
-        "y": 1
+        "y": 10
       },
       "id": 4
     },
@@ -413,7 +459,7 @@
         "h": 4,
         "w": 3,
         "x": 9,
-        "y": 1
+        "y": 10
       },
       "id": 5
     },
@@ -477,7 +523,7 @@
         "h": 4,
         "w": 3,
         "x": 12,
-        "y": 1
+        "y": 10
       },
       "id": 6
     },
@@ -541,7 +587,7 @@
         "h": 4,
         "w": 3,
         "x": 15,
-        "y": 1
+        "y": 10
       },
       "id": 7
     },
@@ -609,7 +655,7 @@
         "h": 4,
         "w": 3,
         "x": 18,
-        "y": 1
+        "y": 10
       },
       "id": 8
     },
@@ -678,7 +724,7 @@
         "h": 4,
         "w": 3,
         "x": 21,
-        "y": 1
+        "y": 10
       },
       "id": 9
     },
@@ -691,7 +737,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 14
       },
       "panels": []
     },
@@ -817,7 +863,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 15
       },
       "id": 11
     },
@@ -882,7 +928,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 15
       },
       "id": 12
     },
@@ -1008,7 +1054,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 23
       },
       "id": 13
     },
@@ -1030,7 +1076,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT label AS \"Check\", n AS \"Count\", oldest AS \"Oldest\" FROM (\n  SELECT 'Finalization pending > 15 min' AS label, count(*) AS n, min(created_at) AS oldest\n    FROM payments WHERE finalization_status = 'pending' AND status = 'succeeded' AND created_at < now() - interval '15 minutes'\n  UNION ALL\n  SELECT 'Flagged for financial review', count(*), min(created_at) FROM payments WHERE requires_financial_review\n  UNION ALL\n  SELECT 'Failed in the last 24 h', count(*), min(created_at)\n    FROM payments WHERE status = 'failed' AND created_at > now() - interval '24 hours'\n  UNION ALL\n  SELECT 'Refund recovery not settled', count(*), min(refund_recovery_updated_at)\n    FROM payments WHERE refund_recovery_status IS NOT NULL AND refund_recovery_status NOT IN ('not_required', 'succeeded')\n) s ORDER BY n DESC"
+          "rawSql": "SELECT label AS \"Check\", n AS \"Count\", oldest AS \"Oldest\" FROM (\n  SELECT 'Finalization pending > 15 min' AS label, count(*) AS n, min(created_at) AS oldest\n    FROM payments WHERE finalization_status IN ('pending', 'processing') AND status = 'succeeded' AND created_at < now() - interval '15 minutes'\n  UNION ALL\n  SELECT 'Flagged for financial review', count(*), min(created_at) FROM payments WHERE requires_financial_review\n  UNION ALL\n  SELECT 'Failed in the last 24 h', count(*), min(created_at)\n    FROM payments WHERE status = 'failed' AND created_at > now() - interval '24 hours'\n  UNION ALL\n  SELECT 'Refund recovery not settled', count(*), min(refund_recovery_updated_at)\n    FROM payments WHERE refund_recovery_status IS NOT NULL AND refund_recovery_status NOT IN ('not_required', 'succeeded')\n) s ORDER BY n DESC"
         }
       ],
       "fieldConfig": {
@@ -1109,7 +1155,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 23
       },
       "id": 14
     },
@@ -1122,7 +1168,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 31
       },
       "panels": []
     },
@@ -1233,7 +1279,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 23
+        "y": 32
       },
       "id": 16
     },
@@ -1310,7 +1356,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 23
+        "y": 32
       },
       "id": 17
     },
@@ -1387,7 +1433,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 23
+        "y": 32
       },
       "id": 18
     },
@@ -1464,7 +1510,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 31
+        "y": 40
       },
       "id": 19
     },
@@ -1529,7 +1575,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 31
+        "y": 40
       },
       "id": 20
     },
@@ -1581,7 +1627,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 31
+        "y": 40
       },
       "id": 21
     },
@@ -1594,7 +1640,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 47
       },
       "panels": []
     },
@@ -1671,7 +1717,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 48
       },
       "id": 23
     },
@@ -1736,7 +1782,7 @@
         "h": 8,
         "w": 6,
         "x": 12,
-        "y": 39
+        "y": 48
       },
       "id": 24
     },
@@ -1788,7 +1834,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 39
+        "y": 48
       },
       "id": 25
     },
@@ -1801,7 +1847,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 56
       },
       "panels": []
     },
@@ -1912,7 +1958,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 48
+        "y": 57
       },
       "id": 27
     },
@@ -1989,7 +2035,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 48
+        "y": 57
       },
       "id": 28
     },
@@ -2090,7 +2136,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 48
+        "y": 57
       },
       "id": 29
     },
@@ -2103,7 +2149,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 56
+        "y": 65
       },
       "panels": []
     },
@@ -2168,7 +2214,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 57
+        "y": 66
       },
       "id": 31
     },
@@ -2233,7 +2279,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 57
+        "y": 66
       },
       "id": 32
     },
@@ -2306,7 +2352,7 @@
         "h": 4,
         "w": 4,
         "x": 16,
-        "y": 57
+        "y": 66
       },
       "id": 33
     },
@@ -2375,7 +2421,7 @@
         "h": 4,
         "w": 4,
         "x": 20,
-        "y": 57
+        "y": 66
       },
       "id": 34
     },
@@ -2445,7 +2491,7 @@
         "h": 4,
         "w": 4,
         "x": 16,
-        "y": 61
+        "y": 70
       },
       "id": 35
     },
@@ -2515,7 +2561,7 @@
         "h": 4,
         "w": 4,
         "x": 20,
-        "y": 61
+        "y": 70
       },
       "id": 36
     },
@@ -2644,7 +2690,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 65
+        "y": 74
       },
       "id": 37
     },
@@ -2709,7 +2755,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 65
+        "y": 74
       },
       "id": 38
     }
