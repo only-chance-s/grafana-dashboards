@@ -1,7 +1,7 @@
 {
   "uid": "staging-support",
   "title": "Customer support",
-  "description": "Support queue and response times for agents, and the plumbing behind them: inbound mailbox, notification outbox, LibreDesk webhooks.",
+  "description": "Support queue and response times for agents, and the plumbing behind them: inbound mailbox, support email delivery, LibreDesk webhooks.",
   "tags": [
     "libredesk",
     "support"
@@ -1485,8 +1485,8 @@
     {
       "type": "stat",
       "id": 26,
-      "title": "Notifications pending",
-      "description": "Support notifications (customer emails and operator alerts) waiting in the outbox for over 15 minutes.",
+      "title": "Support emails not delivered",
+      "description": "Support emails (support_* templates in the email outbox) that were dead-lettered, or are still undelivered 15 minutes after being queued.",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "${postgres}"
@@ -1501,7 +1501,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT count(*) AS \"Pending\" FROM support_notification_outbox WHERE status = 'pending' AND created_at < now() - interval '15 minutes'"
+          "rawSql": "SELECT count(*) AS \"Not delivered\" FROM notification_email_outbox\nWHERE template_name LIKE 'support\\_%' AND (status = 'dead_letter' OR (status <> 'delivered' AND created_at < now() - interval '15 minutes'))"
         }
       ],
       "fieldConfig": {
@@ -1799,8 +1799,8 @@
     {
       "type": "table",
       "id": 31,
-      "title": "Notification outbox",
-      "description": "Support notification outbox by channel and status, current state.",
+      "title": "Support emails",
+      "description": "Support emails in the email outbox by template and delivery status, current state. Operator alerts are delivered in-app, not by email.",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "${postgres}"
@@ -1815,7 +1815,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT channel AS \"Channel\", status AS \"Status\", count(*) AS \"Notifications\",\n       max(attempt_count) AS \"Max attempts\", min(created_at) AS \"Oldest\", max(sent_at) AS \"Last sent\"\nFROM support_notification_outbox GROUP BY 1, 2 ORDER BY 3 DESC"
+          "rawSql": "SELECT template_name AS \"Template\", status AS \"Status\", count(*) AS \"Emails\",\n       max(attempt_count) AS \"Max attempts\", min(created_at) AS \"Oldest\", max(delivered_at) AS \"Last delivered\"\nFROM notification_email_outbox WHERE template_name LIKE 'support\\_%' GROUP BY 1, 2 ORDER BY 3 DESC"
         }
       ],
       "fieldConfig": {
